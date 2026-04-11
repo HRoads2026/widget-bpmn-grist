@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Logigramme Grist</title>
+    
+    <script src="https://unpkg.com/bpmn-js@17.0.0/dist/bpmn-viewer.development.js"></script>
+    
+    <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
+    
+    <style>
+        body, html { height: 100%; margin: 0; padding: 0; }
+        #canvas { height: 100%; width: 100%; background-color: #fcfcfc; }
+    </style>
+</head>
+<body>
+
+    <div id="canvas"></div>
+
+    <script>
+        // --- ETAPE A : Initialisation ---
+        // On crée le "Viewer" et on lui dit de s'afficher dans la div "canvas"
+        const viewer = new BpmnJS({ container: '#canvas' });
+
+        // On prépare une variable pour stocker les données qui viendront de Grist
+        let gristRecords = [];
+
+        // --- ETAPE B : Connexion avec Grist ---
+        // On dit à Grist que le widget est prêt
+        grist.ready({ requiredAccess: 'read' });
+        
+        // Grist nous envoie les lignes du tableau à chaque mise à jour
+        grist.onRecords(function(records) {
+            gristRecords = records; // On stocke les lignes en mémoire
+        });
+
+        // --- ETAPE C : Chargement de votre fichier BPMN ---
+        // /!\ IMPORTANT : Remplacer 'mon_logigramme.bpmn' par le nom exact de votre fichier
+        const bpmnUrl = 'mon_logigramme.bpmn';
+
+        fetch(bpmnUrl)
+            .then(response => response.text()) // On lit le fichier XML
+            .then(xml => viewer.importXML(xml)) // On demande à bpmn-js de le dessiner
+            .then(() => {
+                // On centre le dessin à l'écran
+                viewer.get('canvas').zoom('fit-viewport');
+
+                // --- ETAPE D : Le clic magique ---
+                const eventBus = viewer.get('eventBus');
+                
+                // On écoute quand l'utilisateur clique sur une forme
+                eventBus.on('element.click', function(e) {
+                    const clickedId = e.element.id; // Ex: "Tache_Devis"
+
+                    // On cherche dans Grist si une ligne possède cet ID
+                    const matchedRecord = gristRecords.find(record => record.ID_BPMN === clickedId);
+
+                    if (matchedRecord) {
+                        // Si on trouve, on demande à Grist de sélectionner cette ligne !
+                        grist.setCursorPos({rowId: matchedRecord.id});
+                    } else {
+                        console.log("Aucune ligne trouvée dans Grist pour : " + clickedId);
+                    }
+                });
+            })
+            .catch(err => console.error("Erreur de chargement du logigramme :", err));
+    </script>
+</body>
+</html>
