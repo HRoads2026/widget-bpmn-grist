@@ -27,7 +27,7 @@
 
         // --- ETAPE B : Connexion avec Grist ---
         // On dit à Grist que le widget est prêt
-        grist.ready({ requiredAccess: 'read' });
+        grist.ready({ requiredAccess: 'read table' });
         
         // Grist nous envoie les lignes du tableau à chaque mise à jour
         grist.onRecords(function(records) {
