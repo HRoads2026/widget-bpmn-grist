@@ -3,67 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <title>Mon Logigramme Grist</title>
-    
     <script src="https://unpkg.com/bpmn-js@17.0.0/dist/bpmn-viewer.development.js"></script>
-    
     <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
-    
     <style>
         body, html { height: 100%; margin: 0; padding: 0; }
         #canvas { height: 100%; width: 100%; background-color: #fcfcfc; }
+        #debug {
+            position: fixed; bottom: 8px; left: 8px;
+            background: rgba(0,0,0,0.65); color: #fff;
+            font: 11px monospace; padding: 4px 8px;
+            border-radius: 4px; z-index: 999;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
-
     <div id="canvas"></div>
+    <div id="debug">En attente de Grist…</div>
 
     <script>
-        // --- ETAPE A : Initialisation ---
-        // On crée le "Viewer" et on lui dit de s'afficher dans la div "canvas"
         const viewer = new BpmnJS({ container: '#canvas' });
-
-        // On prépare une variable pour stocker les données qui viendront de Grist
         let gristRecords = [];
+        const dbg = document.getElementById('debug');
 
-        // --- ETAPE B : Connexion avec Grist ---
-        // On dit à Grist que le widget est prêt
-        grist.ready({ requiredAccess: 'read table' });
-        
-        // Grist nous envoie les lignes du tableau à chaque mise à jour
-        grist.onRecords(function(records) {
-            gristRecords = records; // On stocke les lignes en mémoire
+        // ✅ FIX 1 : déclarer la colonne ID_BPMN dans ready()
+        grist.ready({
+            requiredAccess: 'read table',
+            columns: [
+                { name: 'ID_BPMN', title: 'ID BPMN', type: 'Text' }
+            ]
         });
 
-        // --- ETAPE C : Chargement de votre fichier BPMN ---
-        // /!\ IMPORTANT : Remplacer 'mon_logigramme.bpmn' par le nom exact de votre fichier
+        // ✅ FIX 2 : onRecords reçoit maintenant les données de Table1
+        grist.onRecords(function(records, mappings) {
+            // mappings permet de récupérer le bon nom de colonne même si renommée
+            gristRecords = records.map(r => ({
+                id:      r.id,
+                ID_BPMN: mappings ? r[mappings.ID_BPMN] : r.ID_BPMN
+            }));
+            dbg.textContent = `✅ ${gristRecords.length} ligne(s) reçue(s) de Grist`;
+            console.log('Grist records reçus :', gristRecords);
+        });
+
+        // Chargement du BPMN
         const bpmnUrl = 'mon_logigramme.bpmn';
 
         fetch(bpmnUrl)
-            .then(response => response.text()) // On lit le fichier XML
-            .then(xml => viewer.importXML(xml)) // On demande à bpmn-js de le dessiner
+            .then(r => r.text())
+            .then(xml => viewer.importXML(xml))
             .then(() => {
-                // On centre le dessin à l'écran
                 viewer.get('canvas').zoom('fit-viewport');
 
-                // --- ETAPE D : Le clic magique ---
-                const eventBus = viewer.get('eventBus');
-                
-                // On écoute quand l'utilisateur clique sur une forme
-                eventBus.on('element.click', function(e) {
-                    const clickedId = e.element.id; // Ex: "Tache_Devis"
+                viewer.get('eventBus').on('element.click', function(e) {
+                    const clickedId = e.element.id;
+                    dbg.textContent = `🖱️ Clic : "${clickedId}" — ${gristRecords.length} ligne(s) en mémoire`;
 
-                    // On cherche dans Grist si une ligne possède cet ID
-                    const matchedRecord = gristRecords.find(record => record.ID_BPMN === clickedId);
+                    const match = gristRecords.find(r => r.ID_BPMN === clickedId);
 
-                    if (matchedRecord) {
-                        // Si on trouve, on demande à Grist de sélectionner cette ligne !
-                        grist.setCursorPos({rowId: matchedRecord.id});
+                    if (match) {
+                        dbg.textContent = `✅ Lien trouvé → rowId ${match.id}`;
+                        grist.setCursorPos({ rowId: match.id });
                     } else {
-                        console.log("Aucune ligne trouvée dans Grist pour : " + clickedId);
+                        dbg.textContent = `⚠️ Aucune ligne pour "${clickedId}"`;
+                        console.warn('IDs disponibles :', gristRecords.map(r => r.ID_BPMN));
                     }
                 });
             })
-            .catch(err => console.error("Erreur de chargement du logigramme :", err));
+            .catch(err => {
+                dbg.textContent = '❌ Erreur BPMN : ' + err.message;
+                console.error(err);
+            });
     </script>
 </body>
 </html>
