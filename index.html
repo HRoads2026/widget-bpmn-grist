@@ -28,7 +28,7 @@
 
         // ✅ FIX 1 : déclarer la colonne ID_BPMN dans ready()
         grist.ready({
-            requiredAccess: 'read table',
+            requiredAccess: 'full',
             allowSelectBy: true,
             columns: [
                 { name: 'ID_BPMN', title: 'ID BPMN', type: 'Text' }
