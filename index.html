@@ -28,7 +28,7 @@
 
         // ✅ FIX 1 : déclarer la colonne ID_BPMN dans ready()
         grist.ready({
-            requiredAccess: 'full',
+            requiredAccess: 'read table',
             allowSelectBy: true,
             columns: [
                 { name: 'ID_BPMN', title: 'ID BPMN', type: 'Text' }
@@ -63,7 +63,7 @@
 
                     if (match) {
                         dbg.textContent = `✅ Lien trouvé → rowId ${match.id}`;
-                        grist.setCursorPos({ rowId: match.id });
+                        grist.setSelectedRows([match.id]);
                     } else {
                         dbg.textContent = `⚠️ Aucune ligne pour "${clickedId}"`;
                         console.warn('IDs disponibles :', gristRecords.map(r => r.ID_BPMN));
