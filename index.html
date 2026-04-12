@@ -16,11 +16,10 @@
             pointer-events: none;
         }
 
-        /* ✅ NOUVEAU : Le style du panneau latéral droit */
         #side-panel {
             position: fixed;
             top: 0;
-            right: -300px; /* Caché par défaut en dehors de l'écran */
+            right: -300px;
             width: 300px;
             height: 100%;
             background: white;
@@ -32,9 +31,7 @@
             font-family: Arial, sans-serif;
             overflow-y: auto;
         }
-        #side-panel.open {
-            right: 0; /* Fait glisser le panneau dans l'écran */
-        }
+        #side-panel.open { right: 0; }
         .close-btn {
             float: right;
             cursor: pointer;
@@ -45,7 +42,23 @@
         .close-btn:hover { color: #333; }
         .field { margin-top: 20px; }
         .field-label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-        .field-value { font-size: 16px; color: #111; margin-top: 5px; font-weight: bold; }
+        
+        /* ✅ NOUVEAU : Style pour les champs de saisie */
+        .field-input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        .field-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -58,26 +71,28 @@
         
         <div class="field">
             <div class="field-label">Responsable</div>
-            <div class="field-value" id="val-responsable">-</div>
+            <input type="text" class="field-input" id="val-responsable">
         </div>
         <div class="field">
             <div class="field-label">Consulte</div>
-            <div class="field-value" id="val-consulte">-</div>
+            <input type="text" class="field-input" id="val-consulte">
         </div>
         <div class="field">
             <div class="field-label">Risque</div>
-            <div class="field-value" id="val-risque">-</div>
+            <input type="text" class="field-input" id="val-risque">
         </div>
     </div>
 
     <script>
         const viewer = new BpmnJS({ container: '#canvas' });
         let gristRecords = [];
+        let currentMappings = null; // ✅ Pour garder en mémoire les vrais noms des colonnes
+        let currentRecordId = null; // ✅ Pour savoir quelle ligne on modifie
         const dbg = document.getElementById('debug');
 
-        // ✅ FIX 1 & NOUVEAU : Déclarer les nouvelles colonnes
+        // ✅ Obligatoire pour l'écriture : requiredAccess DOIT être 'full'
         grist.ready({
-            requiredAccess: 'read table',
+            requiredAccess: 'full',
             allowSelectBy: true,
             columns: [
                 { name: 'ID_BPMN', title: 'ID BPMN', type: 'Text' },
@@ -87,8 +102,27 @@
             ]
         });
 
-        // ✅ FIX 2 & NOUVEAU : Récupérer les données des nouvelles colonnes
+        // ✅ NOUVEAU : Met à jour les champs HTML sans déranger l'utilisateur s'il tape
+        function updatePanelValues(match) {
+            document.getElementById('panel-title').textContent = match.ID_BPMN;
+            
+            const fields = [
+                { id: 'val-responsable', val: match.Responsable },
+                { id: 'val-consulte', val: match.Consulte },
+                { id: 'val-risque', val: match.Risque }
+            ];
+
+            fields.forEach(f => {
+                const el = document.getElementById(f.id);
+                // On met à jour la valeur SEULEMENT si l'utilisateur n'est pas actif dans ce champ
+                if (document.activeElement !== el) {
+                    el.value = f.val || "";
+                }
+            });
+        }
+
         grist.onRecords(function(records, mappings) {
+            currentMappings = mappings; // Sauvegarde des mappings
             gristRecords = records.map(r => ({
                 id:          r.id,
                 ID_BPMN:     mappings && mappings.ID_BPMN ? r[mappings.ID_BPMN] : r.ID_BPMN,
@@ -96,8 +130,40 @@
                 Consulte:    mappings && mappings.Consulte ? r[mappings.Consulte] : r.Consulte,
                 Risque:      mappings && mappings.Risque ? r[mappings.Risque] : r.Risque
             }));
+            
             dbg.textContent = `✅ ${gristRecords.length} ligne(s) reçue(s) de Grist`;
+
+            // Si le panneau est ouvert, on rafraîchit ses données (ex: modif externe sur Grist)
+            if (currentRecordId) {
+                const match = gristRecords.find(r => r.id === currentRecordId);
+                if (match) updatePanelValues(match);
+            }
         });
+
+        // ✅ NOUVEAU : Fonction pour sauvegarder la saisie vers Grist
+        async function saveToGrist(localName, elementId) {
+            if (!currentRecordId) return;
+            
+            const newValue = document.getElementById(elementId).value;
+            // Retrouver le "vrai" nom de la colonne Grist grâce aux mappings
+            const realColName = currentMappings && currentMappings[localName] ? currentMappings[localName] : localName;
+            
+            try {
+                // On récupère la table actuelle et on ordonne l'update
+                const table = grist.getTable();
+                await table.update({ id: currentRecordId, fields: { [realColName]: newValue } });
+                dbg.textContent = `💾 Enregistré : ${localName}`;
+            } catch (err) {
+                dbg.textContent = `❌ Erreur sauvegarde : ${err.message}`;
+                console.error(err);
+            }
+        }
+
+        // ✅ NOUVEAU : Écoute les changements sur les champs de saisie
+        // L'événement 'change' enregistre quand on clique en dehors du champ ou qu'on fait "Entrée"
+        document.getElementById('val-responsable').addEventListener('change', () => saveToGrist('Responsable', 'val-responsable'));
+        document.getElementById('val-consulte').addEventListener('change', () => saveToGrist('Consulte', 'val-consulte'));
+        document.getElementById('val-risque').addEventListener('change', () => saveToGrist('Risque', 'val-risque'));
 
         // Chargement du BPMN
         const bpmnUrl = 'mon_logigramme.bpmn';
@@ -116,18 +182,14 @@
                         dbg.textContent = `✅ Lien trouvé → rowId ${match.id}`;
                         grist.setSelectedRows([match.id]);
 
-                        // ✅ NOUVEAU : Injecter les données dans le panneau
-                        document.getElementById('panel-title').textContent = match.ID_BPMN;
-                        document.getElementById('val-responsable').textContent = match.Responsable || "Non défini";
-                        document.getElementById('val-consulte').textContent = match.Consulte || "Non défini";
-                        document.getElementById('val-risque').textContent = match.Risque || "Aucun";
+                        currentRecordId = match.id; // ✅ On mémorise la ligne
+                        updatePanelValues(match);   // ✅ On remplit les inputs
 
-                        // ✅ NOUVEAU : Ouvrir le panneau latéral
                         document.getElementById('side-panel').classList.add('open');
                     } else {
                         dbg.textContent = `⚠️ Aucune ligne pour "${clickedId}"`;
-                        // Fermer le panneau si on clique dans le vide ou sur un ID non reconnu
                         document.getElementById('side-panel').classList.remove('open');
+                        currentRecordId = null; 
                     }
                 });
             })
