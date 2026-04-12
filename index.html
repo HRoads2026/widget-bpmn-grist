@@ -6,7 +6,7 @@
     <script src="https://unpkg.com/bpmn-js@17.0.0/dist/bpmn-viewer.development.js"></script>
     <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
     <style>
-        body, html { height: 100%; margin: 0; padding: 0; }
+        body, html { height: 100%; margin: 0; padding: 0; overflow: hidden; }
         #canvas { height: 100%; width: 100%; background-color: #fcfcfc; }
         #debug {
             position: fixed; bottom: 8px; left: 8px;
@@ -15,35 +15,88 @@
             border-radius: 4px; z-index: 999;
             pointer-events: none;
         }
+
+        /* ✅ NOUVEAU : Le style du panneau latéral droit */
+        #side-panel {
+            position: fixed;
+            top: 0;
+            right: -300px; /* Caché par défaut en dehors de l'écran */
+            width: 300px;
+            height: 100%;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            transition: right 0.3s ease-in-out;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+            overflow-y: auto;
+        }
+        #side-panel.open {
+            right: 0; /* Fait glisser le panneau dans l'écran */
+        }
+        .close-btn {
+            float: right;
+            cursor: pointer;
+            color: #888;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        .close-btn:hover { color: #333; }
+        .field { margin-top: 20px; }
+        .field-label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+        .field-value { font-size: 16px; color: #111; margin-top: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div id="canvas"></div>
     <div id="debug">En attente de Grist…</div>
 
+    <div id="side-panel">
+        <span class="close-btn" onclick="document.getElementById('side-panel').classList.remove('open')">✕</span>
+        <h2 id="panel-title">Détails</h2>
+        
+        <div class="field">
+            <div class="field-label">Responsable</div>
+            <div class="field-value" id="val-responsable">-</div>
+        </div>
+        <div class="field">
+            <div class="field-label">Consulte</div>
+            <div class="field-value" id="val-consulte">-</div>
+        </div>
+        <div class="field">
+            <div class="field-label">Risque</div>
+            <div class="field-value" id="val-risque">-</div>
+        </div>
+    </div>
+
     <script>
         const viewer = new BpmnJS({ container: '#canvas' });
         let gristRecords = [];
         const dbg = document.getElementById('debug');
 
-        // ✅ FIX 1 : déclarer la colonne ID_BPMN dans ready()
+        // ✅ FIX 1 & NOUVEAU : Déclarer les nouvelles colonnes
         grist.ready({
             requiredAccess: 'read table',
             allowSelectBy: true,
             columns: [
-                { name: 'ID_BPMN', title: 'ID BPMN', type: 'Text' }
+                { name: 'ID_BPMN', title: 'ID BPMN', type: 'Text' },
+                { name: 'Responsable', title: 'Responsable', type: 'Text', optional: true },
+                { name: 'Consulte', title: 'Consulte', type: 'Text', optional: true },
+                { name: 'Risque', title: 'Risque', type: 'Text', optional: true }
             ]
         });
 
-        // ✅ FIX 2 : onRecords reçoit maintenant les données de Table1
+        // ✅ FIX 2 & NOUVEAU : Récupérer les données des nouvelles colonnes
         grist.onRecords(function(records, mappings) {
-            // mappings permet de récupérer le bon nom de colonne même si renommée
             gristRecords = records.map(r => ({
-                id:      r.id,
-                ID_BPMN: mappings ? r[mappings.ID_BPMN] : r.ID_BPMN
+                id:          r.id,
+                ID_BPMN:     mappings && mappings.ID_BPMN ? r[mappings.ID_BPMN] : r.ID_BPMN,
+                Responsable: mappings && mappings.Responsable ? r[mappings.Responsable] : r.Responsable,
+                Consulte:    mappings && mappings.Consulte ? r[mappings.Consulte] : r.Consulte,
+                Risque:      mappings && mappings.Risque ? r[mappings.Risque] : r.Risque
             }));
             dbg.textContent = `✅ ${gristRecords.length} ligne(s) reçue(s) de Grist`;
-            console.log('Grist records reçus :', gristRecords);
         });
 
         // Chargement du BPMN
@@ -57,22 +110,29 @@
 
                 viewer.get('eventBus').on('element.click', function(e) {
                     const clickedId = e.element.id;
-                    dbg.textContent = `🖱️ Clic : "${clickedId}" — ${gristRecords.length} ligne(s) en mémoire`;
-
                     const match = gristRecords.find(r => r.ID_BPMN === clickedId);
 
                     if (match) {
                         dbg.textContent = `✅ Lien trouvé → rowId ${match.id}`;
                         grist.setSelectedRows([match.id]);
+
+                        // ✅ NOUVEAU : Injecter les données dans le panneau
+                        document.getElementById('panel-title').textContent = match.ID_BPMN;
+                        document.getElementById('val-responsable').textContent = match.Responsable || "Non défini";
+                        document.getElementById('val-consulte').textContent = match.Consulte || "Non défini";
+                        document.getElementById('val-risque').textContent = match.Risque || "Aucun";
+
+                        // ✅ NOUVEAU : Ouvrir le panneau latéral
+                        document.getElementById('side-panel').classList.add('open');
                     } else {
                         dbg.textContent = `⚠️ Aucune ligne pour "${clickedId}"`;
-                        console.warn('IDs disponibles :', gristRecords.map(r => r.ID_BPMN));
+                        // Fermer le panneau si on clique dans le vide ou sur un ID non reconnu
+                        document.getElementById('side-panel').classList.remove('open');
                     }
                 });
             })
             .catch(err => {
                 dbg.textContent = '❌ Erreur BPMN : ' + err.message;
-                console.error(err);
             });
     </script>
 </body>
