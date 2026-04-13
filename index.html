@@ -188,6 +188,7 @@
                         document.getElementById('side-panel').classList.add('open');
                     } else {
                         dbg.textContent = `⚠️ Aucune ligne pour "${clickedId}"`;
+                        grist.setSelectedRows([]);
                         document.getElementById('side-panel').classList.remove('open');
                         currentRecordId = null; 
                     }
