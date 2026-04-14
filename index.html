@@ -6,109 +6,115 @@
     <script src="https://unpkg.com/bpmn-js@17.0.2/dist/bpmn-navigated-viewer.development.js"></script>
     <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
     <style>
-        body, html { height: 100%; margin: 0; padding: 0; background: #f8f9fa; font-family: Arial, sans-serif; overflow: hidden; }
-        #canvas { height: 100%; }
+        body, html, #canvas { height: 100%; margin: 0; padding: 0; background: #f8f9fa; font-family: Arial, sans-serif; }
         
-        /* Style du volet latéral */
+        /* Le CSS du panneau qui marchait bien, un peu élargi avec une barre de défilement */
         #side-panel {
-            position: absolute; top: 0; right: 0; width: 350px; height: 100%;
-            background-color: #ffffff; box-shadow: -2px 0 8px rgba(0,0,0,0.15);
-            display: flex; flex-direction: column; z-index: 1000;
-            transition: transform 0.3s ease;
+            position: fixed; top: 0; right: -380px; width: 350px; height: 100%;
+            background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+            transition: 0.3s; padding: 20px; z-index: 100;
+            box-sizing: border-box; overflow-y: auto;
         }
-        #side-panel.hidden { transform: translateX(100%); }
+        #side-panel.open { right: 0; }
         
-        .panel-header { padding: 15px 20px; background-color: #f8f9fa; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center; }
-        .panel-header h2 { margin: 0; font-size: 18px; color: #333; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .panel-header h2 { margin: 0; font-size: 18px; color: #333; line-height: 1.2; }
         .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; }
         
-        .panel-content { padding: 20px; overflow-y: auto; flex-grow: 1; }
         .field-group { margin-bottom: 12px; }
-        .field-label { font-size: 11px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; margin-bottom: 4px; }
-        .field-value { font-size: 14px; color: #212529; line-height: 1.4; word-wrap: break-word; }
+        .field-label { font-size: 11px; text-transform: uppercase; color: #888; margin-bottom: 4px; font-weight: bold;}
+        .field-value { font-size: 14px; color: #212529; word-wrap: break-word; background: #f8f9fa; padding: 6px; border-radius: 4px;}
         hr { border: 0; border-top: 1px solid #eee; margin: 15px 0; }
     </style>
 </head>
 <body>
     <div id="canvas"></div>
     
-    <div id="side-panel" class="panel hidden">
+    <div id="side-panel">
         <div class="panel-header">
             <h2 id="panel-title">Nom de la tâche</h2>
             <button id="close-panel-btn" class="close-btn">&times;</button>
         </div>
         
-        <div class="panel-content">
-            <div class="field-group">
-                <div class="field-label">Processus</div>
-                <div class="field-value" id="val-processus">-</div>
-            </div>
-            <div class="field-group">
-                <div class="field-label">Sous-Processus</div>
-                <div class="field-value" id="val-sousprocessus">-</div>
-            </div>
-            <hr>
-            <div class="field-group">
-                <div class="field-label">Activité</div>
-                <div class="field-value" id="val-activite">-</div>
-            </div>
-            <div class="field-group">
-                <div class="field-label">Service</div>
-                <div class="field-value" id="val-service">-</div>
-            </div>
-            <div class="field-group">
-                <div class="field-label">Sous-Service</div>
-                <div class="field-value" id="val-sousservice">-</div>
-            </div>
-            <hr>
-            <div class="field-group">
-                <div class="field-label">Titulaire de la tâche</div>
-                <div class="field-value" id="val-titulaire">-</div>
-            </div>
-            <div class="field-group">
-                <div class="field-label">Suppléant</div>
-                <div class="field-value" id="val-suppleant">-</div>
-            </div>
-            <div class="field-group">
-                <div class="field-label">Périodicité</div>
-                <div class="field-value" id="val-periodicite">-</div>
-            </div>
-            <hr>
-            <div class="field-group">
-                <div class="field-label">Contrôle de 1er niveau</div>
-                <div class="field-value" id="val-ctrl1">-</div>
-            </div>
-            <div class="field-group">
-                <div class="field-label">Contrôle hiérarchique</div>
-                <div class="field-value" id="val-ctrlhier">-</div>
-            </div>
-            <hr>
-            <div class="field-group">
-                <div class="field-label">Outil / Application</div>
-                <div class="field-value" id="val-outil">-</div>
-            </div>
-            <div class="field-group">
-                <div class="field-label">Fiches de procédure</div>
-                <div class="field-value" id="val-procedure">-</div>
-            </div>
-            <div class="field-group">
-                <div class="field-label">Mode opératoire SIFAC</div>
-                <div class="field-value" id="val-sifac">-</div>
-            </div>
-            <div class="field-group">
-                <div class="field-label">Textes / Réglementation</div>
-                <div class="field-value" id="val-textes">-</div>
-            </div>
-            <hr>
-            <div class="field-group">
-                <div class="field-label">Observations</div>
-                <div class="field-value" id="val-observations">-</div>
-            </div>
+        <div class="field-group">
+            <div class="field-label">Processus</div>
+            <div class="field-value" id="val-processus">-</div>
+        </div>
+        <div class="field-group">
+            <div class="field-label">Sous-Processus</div>
+            <div class="field-value" id="val-sousprocessus">-</div>
+        </div>
+        
+        <hr>
+        
+        <div class="field-group">
+            <div class="field-label">Activité</div>
+            <div class="field-value" id="val-activite">-</div>
+        </div>
+        <div class="field-group">
+            <div class="field-label">Service</div>
+            <div class="field-value" id="val-service">-</div>
+        </div>
+        <div class="field-group">
+            <div class="field-label">Sous-Service</div>
+            <div class="field-value" id="val-sousservice">-</div>
+        </div>
+
+        <hr>
+
+        <div class="field-group">
+            <div class="field-label">Titulaire de la tâche</div>
+            <div class="field-value" id="val-titulaire">-</div>
+        </div>
+        <div class="field-group">
+            <div class="field-label">Suppléant</div>
+            <div class="field-value" id="val-suppleant">-</div>
+        </div>
+        <div class="field-group">
+            <div class="field-label">Périodicité</div>
+            <div class="field-value" id="val-periodicite">-</div>
+        </div>
+
+        <hr>
+
+        <div class="field-group">
+            <div class="field-label">Contrôle de 1er niveau</div>
+            <div class="field-value" id="val-ctrl1">-</div>
+        </div>
+        <div class="field-group">
+            <div class="field-label">Contrôle hiérarchique</div>
+            <div class="field-value" id="val-ctrlhier">-</div>
+        </div>
+
+        <hr>
+
+        <div class="field-group">
+            <div class="field-label">Outil / Application</div>
+            <div class="field-value" id="val-outil">-</div>
+        </div>
+        <div class="field-group">
+            <div class="field-label">Fiches de procédure</div>
+            <div class="field-value" id="val-procedure">-</div>
+        </div>
+        <div class="field-group">
+            <div class="field-label">Mode opératoire SIFAC</div>
+            <div class="field-value" id="val-sifac">-</div>
+        </div>
+        <div class="field-group">
+            <div class="field-label">Textes / Réglementation</div>
+            <div class="field-value" id="val-textes">-</div>
+        </div>
+
+        <hr>
+
+        <div class="field-group">
+            <div class="field-label">Observations</div>
+            <div class="field-value" id="val-observations">-</div>
         </div>
     </div>
 
     <script>
-        // Le script Python remplacera cette balise
+        // Le script Python remplacera la ligne ci-dessous
         const bpmnXML = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0v840oy" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.34.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.7.0">
   <bpmn:collaboration id="Collaboration_13grwbo">
@@ -2439,77 +2445,31 @@ Niveau de prise en charge de la voiture</bpmn:text>
 
         const viewer = new BpmnJS({ container: '#canvas' });
         let gristRecords = [];
+        let currentRecordId = null;
 
         async function init() {
             try {
                 await viewer.importXML(bpmnXML);
                 viewer.get('canvas').zoom('fit-viewport');
 
-                // Écoute des clics sur le dessin BPMN
-                viewer.get('eventBus').on('element.click', function(e) {
-                    const clickedId = e.element.id;
-                    const match = gristRecords.find(r => r.ID_BPMN === clickedId);
-                    
+                // VOTRE ANCIENNE MÉCANIQUE : On réagit immédiatement au clic
+                viewer.on('element.click', (e) => {
+                    const match = gristRecords.find(r => r.ID_BPMN === e.element.id);
                     if (match) {
-                        // Si on trouve la tâche, on demande à Grist de sélectionner la ligne
-                        grist.setSelectedRows([match.id]);
-                    } else {
-                        // Si on clique dans le vide, on désélectionne tout et on ferme le panneau
-                        grist.setSelectedRows([]);
-                        document.getElementById('side-panel').classList.add('hidden');
-                    }
-                });
-            } catch (err) { console.error("Erreur de chargement BPMN :", err); }
-        }
+                        currentRecordId = match.id;
+                        grist.setSelectedRows([match.id]); // On dit à Grist de sélectionner la ligne
 
-        grist.ready({ requiredAccess: 'read', allowSelectBy: true });
-
-        // On garde en mémoire toutes les lignes pour pouvoir faire la correspondance des IDs
-        grist.onRecords(function(records) {
-            gristRecords = records;
-        });
-
-        // Cette fonction se déclenche CHAQUE FOIS qu'une ligne est sélectionnée dans Grist
-        grist.onRecord(function(record) {
-            if (!record) {
-                document.getElementById('side-panel').classList.add('hidden');
-                return;
-            }
-
-            // 1. Mise à jour du titre principal du volet
-            document.getElementById('panel-title').innerText = record.Activite || record.ID_BPMN || 'Activité non définie';
-
-            // 2. Mappage de chaque champ
-            document.getElementById('val-processus').innerText = record.Processus || '-';
-            document.getElementById('val-sousprocessus').innerText = record.SousProcessus || '-';
-            document.getElementById('val-activite').innerText = record.Activite || '-';
-            document.getElementById('val-service').innerText = record.Service || '-';
-            document.getElementById('val-sousservice').innerText = record.SousService || '-';
-            
-            document.getElementById('val-titulaire').innerText = record.Titulaire_de_la_tache || '-';
-            document.getElementById('val-suppleant').innerText = record.Suppleant || '-';
-            document.getElementById('val-periodicite').innerText = record.Periodicite_de_la_tache || '-';
-            
-            document.getElementById('val-ctrl1').innerText = record.Titulaire_charge_du_controle_de_1er_niveau || '-';
-            document.getElementById('val-ctrlhier').innerText = record.Titulaire_charge_du_controle_hierarchique || '-';
-            
-            document.getElementById('val-outil').innerText = record.Application_outil_utilise_pour_realiser_la_tache || '-';
-            document.getElementById('val-procedure').innerText = record.Documentation_Fiches_de_procedure_associees || '-';
-            document.getElementById('val-sifac').innerText = record.Mode_operatoire_SIFAC || '-';
-            document.getElementById('val-textes').innerText = record.Textes_reglementation || '-';
-            document.getElementById('val-observations').innerText = record.Observations || '-';
-
-            // 3. Afficher le volet latéral
-            document.getElementById('side-panel').classList.remove('hidden');
-        });
-
-        // Fonction pour fermer le volet avec la croix
-        document.getElementById('close-panel-btn').addEventListener('click', function() {
-            document.getElementById('side-panel').classList.add('hidden');
-            grist.setSelectedRows([]); // Désélectionne la ligne dans Grist
-        });
-
-        init();
-    </script>
-</body>
-</html>
+                        // On met à jour tous les textes du volet
+                        document.getElementById('panel-title').innerText = match.Activite || match.ID_BPMN || "Activité non définie";
+                        document.getElementById('val-processus').innerText = match.Processus || "-";
+                        document.getElementById('val-sousprocessus').innerText = match.SousProcessus || "-";
+                        document.getElementById('val-activite').innerText = match.Activite || "-";
+                        document.getElementById('val-service').innerText = match.Service || "-";
+                        document.getElementById('val-sousservice').innerText = match.SousService || "-";
+                        
+                        document.getElementById('val-titulaire').innerText = match.Titulaire_de_la_tache || "-";
+                        document.getElementById('val-suppleant').innerText = match.Suppleant || "-";
+                        document.getElementById('val-periodicite').innerText = match.Periodicite_de_la_tache || "-";
+                        
+                        document.getElementById('val-ctrl1').innerText = match.Titulaire_charge_du_controle_de_1er_niveau || "-";
+                        document.getElementById('val-ctrlhier').innerText = match.Titulaire_charge_du_controle_hierarchique || "-";
