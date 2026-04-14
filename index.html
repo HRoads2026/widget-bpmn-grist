@@ -6,7 +6,8 @@
     <script src="https://unpkg.com/bpmn-js@17.0.2/dist/bpmn-navigated-viewer.development.js"></script>
     <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
     <style>
-        body, html, #canvas { height: 100%; margin: 0; padding: 0; background: #f8f9fa; font-family: Arial, sans-serif; overflow: hidden; }
+        body, html, #canvas { height: 100%; margin: 0; padding: 0; background: #f8f9fa; font-family: Arial, sans-serif; }
+        
         #side-panel {
             position: fixed; top: 0; right: -350px; width: 320px; height: 100%;
             background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
@@ -14,15 +15,20 @@
             box-sizing: border-box; overflow-y: auto;
         }
         #side-panel.open { right: 0; }
+        
         .field-label { font-size: 11px; font-weight: bold; color: #888; text-transform: uppercase; margin-top: 10px; display: block; }
         .field-input { width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ddd; box-sizing: border-box; background: #fcfcfc; font-size: 13px; }
         h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 16px; }
+        
+        /* Bouton fermer optionnel */
+        #close-btn { float: right; cursor: pointer; font-size: 20px; border: none; background: none; color: #aaa; }
     </style>
 </head>
 <body>
     <div id="canvas"></div>
     
     <div id="side-panel">
+        <button id="close-btn">&times;</button>
         <h3 id="panel-title">Détails de la tâche</h3>
         
         <span class="field-label">Activité</span>
@@ -451,7 +457,7 @@ Niveau de prise en charge de la voiture</bpmn:text>
         <bpmn:targetRef>DataObjectReference_1lcj75y</bpmn:targetRef>
       </bpmn:dataOutputAssociation>
     </bpmn:task>
-    <bpmn:task id="Activity_0x5vbzc" name="Préparer la avion">
+    <bpmn:task id="Activity_0x5vbzc" name="Préparer la partie dans l&#39;avion">
       <bpmn:incoming>Flow_16o7lnc</bpmn:incoming>
       <bpmn:incoming>Flow_0z6eb3b</bpmn:incoming>
       <bpmn:outgoing>Flow_0hgcu2c</bpmn:outgoing>
@@ -2398,18 +2404,12 @@ Niveau de prise en charge de la voiture</bpmn:text>
                 await viewer.importXML(bpmnXML);
                 viewer.get('canvas').zoom('fit-viewport');
 
-                // Utilisation de l'eventBus pour une détection de clic plus fiable
-                const eventBus = viewer.get('eventBus');
-                eventBus.on('element.click', function(e) {
-                    const elementId = e.element.id;
-                    console.log("Clic sur l'élément :", elementId);
-
-                    const match = gristRecords.find(r => r.ID_BPMN === elementId);
+                viewer.on('element.click', (e) => {
+                    // On cherche la correspondance par l'ID de l'élément cliqué
+                    const match = gristRecords.find(r => r.ID_BPMN === e.element.id);
                     
                     if (match) {
-                        console.log("Match trouvé dans Grist :", match);
-                        
-                        // Remplissage des champs avec fallback sur chaîne vide
+                        // Remplissage des champs
                         document.getElementById('val-activite').value = match.Activite_du_logigramme || "";
                         document.getElementById('val-composante').value = match.Composante_concernee || "";
                         document.getElementById('val-titulaire').value = match.Titulaire_de_la_tache || "";
@@ -2423,25 +2423,34 @@ Niveau de prise en charge de la voiture</bpmn:text>
                         document.getElementById('val-textes').value = match.Textes_reglementation || "";
                         document.getElementById('val-observations').value = match.Observations || "";
 
+                        // Ouverture du panneau
                         document.getElementById('side-panel').classList.add('open');
+                        
+                        // Optionnel : Sélectionne aussi la ligne dans le tableau Grist
                         grist.setSelectedRows([match.id]);
                     } else {
-                        console.log("Aucune correspondance trouvée pour l'ID", elementId);
+                        // Clic dans le vide : on ferme
                         document.getElementById('side-panel').classList.remove('open');
                     }
                 });
-            } catch (err) { console.error("Erreur d'initialisation BPMN :", err); }
+            } catch (err) { console.error("Erreur BPMN:", err); }
         }
 
+        // Fermeture manuelle via le bouton X
+        document.getElementById('close-btn').onclick = function() {
+            document.getElementById('side-panel').classList.remove('open');
+        };
+
         grist.ready({ requiredAccess: 'full', allowSelectBy: true });
-        
+
         grist.onRecords((records, mappings) => {
-            console.log("Données reçues de Grist. Mappings actifs :", mappings);
-            
+            // SECURITÉ : On vérifie si mappings existe pour éviter l'erreur "reading of null"
             gristRecords = records.map(r => {
-                // Fonction utilitaire pour récupérer la valeur soit par le mapping Grist, soit par le nom direct
-                const getVal = (col) => r[mappings[col] || col];
-                
+                const getVal = (col) => {
+                    const mappedName = (mappings && mappings[col]) ? mappings[col] : col;
+                    return r[mappedName];
+                };
+
                 return {
                     id: r.id,
                     ID_BPMN: getVal('ID_BPMN'),
@@ -2459,6 +2468,7 @@ Niveau de prise en charge de la voiture</bpmn:text>
                     Observations: getVal('Observations')
                 };
             });
+            console.log("Données chargées :", gristRecords.length, "lignes.");
         });
 
         init();
