@@ -6,17 +6,17 @@
     <script src="https://unpkg.com/bpmn-js@17.0.2/dist/bpmn-navigated-viewer.development.js"></script>
     <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
     <style>
-        body, html, #canvas { height: 100%; margin: 0; padding: 0; background: #f8f9fa; font-family: Arial, sans-serif; }
+        body, html, #canvas { height: 100%; margin: 0; padding: 0; background: #f8f9fa; font-family: Arial, sans-serif; overflow: hidden; }
         #side-panel {
             position: fixed; top: 0; right: -350px; width: 320px; height: 100%;
             background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
             transition: 0.3s; padding: 20px; z-index: 100;
-            box-sizing: border-box; overflow-y: auto; /* Permet de défiler si la liste est longue */
+            box-sizing: border-box; overflow-y: auto;
         }
         #side-panel.open { right: 0; }
         .field-label { font-size: 11px; font-weight: bold; color: #888; text-transform: uppercase; margin-top: 10px; display: block; }
-        .field-input { width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ddd; box-sizing: border-box; background: #fcfcfc; }
-        h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .field-input { width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ddd; box-sizing: border-box; background: #fcfcfc; font-size: 13px; }
+        h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -63,7 +63,6 @@
     </div>
 
     <script>
-        // Le script Python remplacera la ligne ci-dessous
         const bpmnXML = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0v840oy" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.34.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.7.0">
   <bpmn:collaboration id="Collaboration_13grwbo">
@@ -2391,22 +2390,26 @@ Niveau de prise en charge de la voiture</bpmn:text>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>
 `;
-
         const viewer = new BpmnJS({ container: '#canvas' });
         let gristRecords = [];
-        let currentRecordId = null;
 
         async function init() {
             try {
                 await viewer.importXML(bpmnXML);
                 viewer.get('canvas').zoom('fit-viewport');
 
-                viewer.on('element.click', (e) => {
-                    const match = gristRecords.find(r => r.ID_BPMN === e.element.id);
+                // Utilisation de l'eventBus pour une détection de clic plus fiable
+                const eventBus = viewer.get('eventBus');
+                eventBus.on('element.click', function(e) {
+                    const elementId = e.element.id;
+                    console.log("Clic sur l'élément :", elementId);
+
+                    const match = gristRecords.find(r => r.ID_BPMN === elementId);
+                    
                     if (match) {
-                        currentRecordId = match.id;
+                        console.log("Match trouvé dans Grist :", match);
                         
-                        // Remplissage des champs
+                        // Remplissage des champs avec fallback sur chaîne vide
                         document.getElementById('val-activite').value = match.Activite_du_logigramme || "";
                         document.getElementById('val-composante').value = match.Composante_concernee || "";
                         document.getElementById('val-titulaire').value = match.Titulaire_de_la_tache || "";
@@ -2423,30 +2426,39 @@ Niveau de prise en charge de la voiture</bpmn:text>
                         document.getElementById('side-panel').classList.add('open');
                         grist.setSelectedRows([match.id]);
                     } else {
+                        console.log("Aucune correspondance trouvée pour l'ID", elementId);
                         document.getElementById('side-panel').classList.remove('open');
                     }
                 });
-            } catch (err) { console.error(err); }
+            } catch (err) { console.error("Erreur d'initialisation BPMN :", err); }
         }
 
         grist.ready({ requiredAccess: 'full', allowSelectBy: true });
+        
         grist.onRecords((records, mappings) => {
-            gristRecords = records.map(r => ({
-                id: r.id,
-                ID_BPMN: r[mappings.ID_BPMN || 'ID_BPMN'],
-                Activite_du_logigramme: r[mappings.Activite_du_logigramme || 'Activite_du_logigramme'],
-                Composante_concernee: r[mappings.Composante_concernee || 'Composante_concernee'],
-                Titulaire_de_la_tache: r[mappings.Titulaire_de_la_tache || 'Titulaire_de_la_tache'],
-                Periodicite_de_la_tache: r[mappings.Periodicite_de_la_tache || 'Periodicite_de_la_tache'],
-                Suppleant: r[mappings.Suppleant || 'Suppleant'],
-                Titulaire_charge_du_controle_de_1er_niveau: r[mappings.Titulaire_charge_du_controle_de_1er_niveau || 'Titulaire_charge_du_controle_de_1er_niveau'],
-                Titulaire_charge_du_controle_hierarchique: r[mappings.Titulaire_charge_du_controle_hierarchique || 'Titulaire_charge_du_controle_hierarchique'],
-                Application_outil_utilise_pour_realiser_la_tache: r[mappings.Application_outil_utilise_pour_realiser_la_tache || 'Application_outil_utilise_pour_realiser_la_tache'],
-                Documentation_Fiches_de_procedure_associees: r[mappings.Documentation_Fiches_de_procedure_associees || 'Documentation_Fiches_de_procedure_associees'],
-                Mode_operatoire_SIFAC: r[mappings.Mode_operatoire_SIFAC || 'Mode_operatoire_SIFAC'],
-                Textes_reglementation: r[mappings.Textes_reglementation || 'Textes_reglementation'],
-                Observations: r[mappings.Observations || 'Observations']
-            }));
+            console.log("Données reçues de Grist. Mappings actifs :", mappings);
+            
+            gristRecords = records.map(r => {
+                // Fonction utilitaire pour récupérer la valeur soit par le mapping Grist, soit par le nom direct
+                const getVal = (col) => r[mappings[col] || col];
+                
+                return {
+                    id: r.id,
+                    ID_BPMN: getVal('ID_BPMN'),
+                    Activite_du_logigramme: getVal('Activite_du_logigramme'),
+                    Composante_concernee: getVal('Composante_concernee'),
+                    Titulaire_de_la_tache: getVal('Titulaire_de_la_tache'),
+                    Periodicite_de_la_tache: getVal('Periodicite_de_la_tache'),
+                    Suppleant: getVal('Suppleant'),
+                    Titulaire_charge_du_controle_de_1er_niveau: getVal('Titulaire_charge_du_controle_de_1er_niveau'),
+                    Titulaire_charge_du_controle_hierarchique: getVal('Titulaire_charge_du_controle_hierarchique'),
+                    Application_outil_utilise_pour_realiser_la_tache: getVal('Application_outil_utilise_pour_realiser_la_tache'),
+                    Documentation_Fiches_de_procedure_associees: getVal('Documentation_Fiches_de_procedure_associees'),
+                    Mode_operatoire_SIFAC: getVal('Mode_operatoire_SIFAC'),
+                    Textes_reglementation: getVal('Textes_reglementation'),
+                    Observations: getVal('Observations')
+                };
+            });
         });
 
         init();
