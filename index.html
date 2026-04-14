@@ -2473,3 +2473,56 @@ Niveau de prise en charge de la voiture</bpmn:text>
                         
                         document.getElementById('val-ctrl1').innerText = match.Titulaire_charge_du_controle_de_1er_niveau || "-";
                         document.getElementById('val-ctrlhier').innerText = match.Titulaire_charge_du_controle_hierarchique || "-";
+                        
+                        document.getElementById('val-outil').innerText = match.Application_outil_utilise_pour_realiser_la_tache || "-";
+                        document.getElementById('val-procedure').innerText = match.Documentation_Fiches_de_procedure_associees || "-";
+                        document.getElementById('val-sifac').innerText = match.Mode_operatoire_SIFAC || "-";
+                        document.getElementById('val-textes').innerText = match.Textes_reglementation || "-";
+                        document.getElementById('val-observations').innerText = match.Observations || "-";
+
+                        // On ouvre le volet instantanément
+                        document.getElementById('side-panel').classList.add('open');
+                    } else {
+                        // Si on clique dans le vide, on désélectionne et on ferme le volet
+                        grist.setSelectedRows([]);
+                        document.getElementById('side-panel').classList.remove('open');
+                    }
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        // Le bouton de fermeture (la croix)
+        document.getElementById('close-panel-btn').addEventListener('click', function() {
+            document.getElementById('side-panel').classList.remove('open');
+            grist.setSelectedRows([]);
+        });
+
+        // CHARGEMENT DES DONNÉES DEPUIS GRIST
+        grist.ready({ requiredAccess: 'full', allowSelectBy: true });
+        grist.onRecords((records, mappings) => {
+            // On met en mémoire TOUTES les colonnes nécessaires
+            gristRecords = records.map(r => ({
+                id: r.id,
+                ID_BPMN: r[mappings.ID_BPMN || 'ID_BPMN'],
+                Processus: r.Processus,
+                SousProcessus: r.SousProcessus,
+                Activite: r.Activite,
+                Service: r.Service,
+                SousService: r.SousService,
+                Titulaire_de_la_tache: r.Titulaire_de_la_tache,
+                Suppleant: r.Suppleant,
+                Periodicite_de_la_tache: r.Periodicite_de_la_tache,
+                Titulaire_charge_du_controle_de_1er_niveau: r.Titulaire_charge_du_controle_de_1er_niveau,
+                Titulaire_charge_du_controle_hierarchique: r.Titulaire_charge_du_controle_hierarchique,
+                Application_outil_utilise_pour_realiser_la_tache: r.Application_outil_utilise_pour_realiser_la_tache,
+                Documentation_Fiches_de_procedure_associees: r.Documentation_Fiches_de_procedure_associees,
+                Mode_operatoire_SIFAC: r.Mode_operatoire_SIFAC,
+                Textes_reglementation: r.Textes_reglementation,
+                Observations: r.Observations
+            }));
+        });
+
+        init();
+    </script>
+</body>
+</html>
