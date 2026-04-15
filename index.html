@@ -6,7 +6,6 @@
     <script src="https://unpkg.com/bpmn-js@17.0.2/dist/bpmn-navigated-viewer.development.js"></script>
     <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
     <style>
-        /* Structure essentielle pour le rendu de BPMN-JS */
         body, html { height: 100%; margin: 0; padding: 0; width: 100%; background: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
         #canvas { height: 100%; width: 100%; }
 
@@ -41,7 +40,7 @@
         }
         #close-btn:hover { background: #ddd; }
 
-        /* Grille de 6 colonnes pour une flexibilité maximale */
+        /* Grille de 6 colonnes */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
@@ -73,15 +72,8 @@
             box-shadow: 0 0 0 2px rgba(22, 179, 120, 0.15);
         }
         
-        /* Classes d'occupation de la grille */
         .col-3 { grid-column: span 3; } 
         .col-6 { grid-column: span 6; } 
-        .col-2 { grid-column: span 2; } 
-        
-        /* Style spécial pour les métadonnées (Bas du formulaire) */
-        .meta-section .field-label { font-size: 10px; color: #888; margin-top: 5px; }
-        .meta-section .field-input { font-size: 11px; padding: 5px 8px; background: #f7f7f7; border-color: #eee; }
-        .meta-section .section-title { border-bottom: 1px solid #ddd; color: #888; margin-top: 10px; }
         
         textarea.field-input { resize: vertical; min-height: 50px; }
 
@@ -92,13 +84,23 @@
         }
         #save-indicator.saving { opacity: 1; color: #f39c12; }
         #save-indicator.saved { opacity: 1; color: #16b378; }
+
+        /* Pied de page pour les Métadonnées */
+        #metadata-footer {
+            border-top: 1px solid #eee;
+            background: #f9f9f9;
+            padding: 8px 20px;
+            font-size: 11px;
+            color: #888;
+            flex-shrink: 0;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
     </style>
 </head>
 <body>
     
-    <!-- Le canvas est directement sous body avec un height:100% -->
     <div id="canvas"></div>
-    
     <div id="timestamp-bottom">🕒 Mise à jour : <strong id="file-date">Chargement...</strong></div>
     
     <div id="side-panel">
@@ -115,11 +117,11 @@
             
             <div class="col-3">
                 <span class="field-label">Processus</span>
-                <input type="text" class="field-input" data-grist-col="Processus">
+                <input type="text" class="field-input" data-grist-col="Processus" readonly style="background:#f3f3f3;">
             </div>
             <div class="col-3">
                 <span class="field-label">Sous-Processus</span>
-                <input type="text" class="field-input" data-grist-col="Sous_Processus">
+                <input type="text" class="field-input" data-grist-col="Sous_Processus" readonly style="background:#f3f3f3;">
             </div>
             <div class="col-3">
                 <span class="field-label">Composante concernée</span>
@@ -127,7 +129,7 @@
             </div>
             <div class="col-3">
                 <span class="field-label">Sous-Service</span>
-                <input type="text" class="field-input" data-grist-col="Sous_Service">
+                <input type="text" class="field-input" data-grist-col="Sous_Service" readonly style="background:#f3f3f3;">
             </div>
             <div class="col-6">
                 <span class="field-label">Activité du logigramme</span>
@@ -209,30 +211,10 @@
                 <textarea class="field-input" data-grist-col="Observations"></textarea>
             </div>
 
-            <!-- BLOC 4 : MÉTADONNÉES (Style réduit) -->
-            <div class="meta-section">
-                <div class="section-title">Métadonnées & IDs</div>
-
-                <div class="col-2">
-                    <span class="field-label">ID BPMN</span>
-                    <input type="text" class="field-input" data-grist-col="ID_BPMN" readonly>
-                </div>
-                <div class="col-2">
-                    <span class="field-label">ID Primaire</span>
-                    <input type="text" class="field-input" data-grist-col="ID_Primaire" readonly>
-                </div>
-                <div class="col-2">
-                    <span class="field-label">ID Parent</span>
-                    <input type="text" class="field-input" data-grist-col="ID_BPMN_Parent" readonly>
-                </div>
-                
-                <div class="col-6">
-                    <span class="field-label">Dernière MAJ</span>
-                    <input type="text" class="field-input" data-grist-col="MAJ" readonly>
-                </div>
-            </div>
-
         </div>
+
+        <!-- Métadonnées sur une seule ligne -->
+        <div id="metadata-footer">Métadonnées et IDS : Chargement...</div>
     </div>
 
     <script>
@@ -243,15 +225,23 @@
   </bpmn:collaboration>
   <bpmn:process id="Process_02fzt0f" isExecutable="true">
     <bpmn:laneSet id="LaneSet_1h3k2vv">
-      <bpmn:lane id="Lane_1pc600n" name="Ligne 1">
-        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Activity_1vls4ew</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Activity_05ywrny</bpmn:flowNodeRef>
-      </bpmn:lane>
       <bpmn:lane id="Lane_0pgrjsp" name="Ligne A">
         <bpmn:flowNodeRef>Activity_0ecmqc1</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Event_0qweq5d</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Activity_1eiltmz</bpmn:flowNodeRef>
+        <bpmn:childLaneSet id="LaneSet_0epj4vu">
+          <bpmn:lane id="Lane_1yb95ko" name="SLAB" />
+          <bpmn:lane id="Lane_1leektb" name="SLAA">
+            <bpmn:flowNodeRef>Activity_0ecmqc1</bpmn:flowNodeRef>
+            <bpmn:flowNodeRef>Event_0qweq5d</bpmn:flowNodeRef>
+            <bpmn:flowNodeRef>Activity_1eiltmz</bpmn:flowNodeRef>
+          </bpmn:lane>
+        </bpmn:childLaneSet>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_1pc600n" name="Ligne 1">
+        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_1vls4ew</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_05ywrny</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
     <bpmn:startEvent id="StartEvent_1">
@@ -261,13 +251,10 @@
       <bpmn:incoming>Flow_0eor53r</bpmn:incoming>
       <bpmn:outgoing>Flow_1ahtq33</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_0eor53r" sourceRef="StartEvent_1" targetRef="Activity_1vls4ew" />
     <bpmn:task id="Activity_05ywrny" name="Tache_Facture">
       <bpmn:incoming>Flow_1ahtq33</bpmn:incoming>
       <bpmn:outgoing>Flow_1qo80sp</bpmn:outgoing>
     </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_1ahtq33" sourceRef="Activity_1vls4ew" targetRef="Activity_05ywrny" />
-    <bpmn:sequenceFlow id="Flow_1qo80sp" sourceRef="Activity_05ywrny" targetRef="Activity_0ecmqc1" />
     <bpmn:task id="Activity_0ecmqc1" name="bof">
       <bpmn:incoming>Flow_1qo80sp</bpmn:incoming>
       <bpmn:outgoing>Flow_0myd61g</bpmn:outgoing>
@@ -288,69 +275,80 @@
       </bpmn:task>
       <bpmn:sequenceFlow id="Flow_1jw4tc8" sourceRef="Activity_0934aq8" targetRef="Activity_0vnlq99" />
     </bpmn:subProcess>
-    <bpmn:sequenceFlow id="Flow_0myd61g" sourceRef="Activity_0ecmqc1" targetRef="Activity_1eiltmz" />
     <bpmn:endEvent id="Event_0qweq5d">
       <bpmn:incoming>Flow_0qchd7x</bpmn:incoming>
     </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0eor53r" sourceRef="StartEvent_1" targetRef="Activity_1vls4ew" />
+    <bpmn:sequenceFlow id="Flow_1ahtq33" sourceRef="Activity_1vls4ew" targetRef="Activity_05ywrny" />
+    <bpmn:sequenceFlow id="Flow_1qo80sp" sourceRef="Activity_05ywrny" targetRef="Activity_0ecmqc1" />
+    <bpmn:sequenceFlow id="Flow_0myd61g" sourceRef="Activity_0ecmqc1" targetRef="Activity_1eiltmz" />
     <bpmn:sequenceFlow id="Flow_0qchd7x" sourceRef="Activity_1eiltmz" targetRef="Event_0qweq5d" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0rf5szf">
       <bpmndi:BPMNShape id="Participant_1hp00ld_di" bpmnElement="Participant_1hp00ld" isHorizontal="true">
-        <dc:Bounds x="132" y="110" width="916" height="250" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_1pc600n_di" bpmnElement="Lane_1pc600n" isHorizontal="true">
-        <dc:Bounds x="162" y="110" width="886" height="125" />
+        <dc:Bounds x="142" y="93" width="916" height="250" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Lane_0pgrjsp_di" bpmnElement="Lane_0pgrjsp" isHorizontal="true">
-        <dc:Bounds x="162" y="235" width="886" height="125" />
+        <dc:Bounds x="172" y="218" width="886" height="125" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_1yb95ko_di" bpmnElement="Lane_1yb95ko" isHorizontal="true">
+        <dc:Bounds x="202" y="218" width="856" height="63" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_1leektb_di" bpmnElement="Lane_1leektb" isHorizontal="true">
+        <dc:Bounds x="202" y="281" width="856" height="62" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_1pc600n_di" bpmnElement="Lane_1pc600n" isHorizontal="true">
+        <dc:Bounds x="172" y="93" width="886" height="125" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
-        <dc:Bounds x="182" y="162" width="36" height="36" />
+        <dc:Bounds x="192" y="145" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1vls4ew_di" bpmnElement="Activity_1vls4ew">
-        <dc:Bounds x="270" y="140" width="100" height="80" />
+        <dc:Bounds x="280" y="123" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_05ywrny_di" bpmnElement="Activity_05ywrny">
-        <dc:Bounds x="430" y="140" width="100" height="80" />
+        <dc:Bounds x="440" y="123" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_0ecmqc1_di" bpmnElement="Activity_0ecmqc1">
-        <dc:Bounds x="590" y="270" width="100" height="80" />
+        <dc:Bounds x="600" y="253" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Event_0qweq5d_di" bpmnElement="Event_0qweq5d">
-        <dc:Bounds x="912" y="292" width="36" height="36" />
+        <dc:Bounds x="922" y="275" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Activity_1eiltmz_di" bpmnElement="Activity_1eiltmz">
-        <dc:Bounds x="750" y="270" width="100" height="80" />
+        <dc:Bounds x="760" y="253" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="Flow_0eor53r_di" bpmnElement="Flow_0eor53r">
-        <di:waypoint x="218" y="180" />
-        <di:waypoint x="270" y="180" />
+        <di:waypoint x="228" y="163" />
+        <di:waypoint x="280" y="163" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1ahtq33_di" bpmnElement="Flow_1ahtq33">
-        <di:waypoint x="370" y="180" />
-        <di:waypoint x="430" y="180" />
+        <di:waypoint x="380" y="163" />
+        <di:waypoint x="440" y="163" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1qo80sp_di" bpmnElement="Flow_1qo80sp">
-        <di:waypoint x="530" y="180" />
-        <di:waypoint x="560" y="180" />
-        <di:waypoint x="560" y="310" />
-        <di:waypoint x="590" y="310" />
+        <di:waypoint x="540" y="163" />
+        <di:waypoint x="570" y="163" />
+        <di:waypoint x="570" y="293" />
+        <di:waypoint x="600" y="293" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0myd61g_di" bpmnElement="Flow_0myd61g">
-        <di:waypoint x="690" y="310" />
-        <di:waypoint x="750" y="310" />
+        <di:waypoint x="700" y="293" />
+        <di:waypoint x="760" y="293" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0qchd7x_di" bpmnElement="Flow_0qchd7x">
-        <di:waypoint x="850" y="310" />
-        <di:waypoint x="912" y="310" />
+        <di:waypoint x="860" y="293" />
+        <di:waypoint x="922" y="293" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
@@ -385,7 +383,55 @@
         let currentMappings = {};
         let currentRecordId = null;
         
-        // Gestion de la date de mise à jour du fichier
+        // --- Parseur XML pour extraire Processus, Service, Sous-Service ---
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(bpmnXML, "text/xml");
+        const bpmnNS = "http://www.omg.org/spec/BPMN/20100524/MODEL";
+
+        function getProcessData(elementId) {
+            let process = "";
+            let sousProcessus = ""; // Correspond au Service (Lane de niveau 1)
+            let sousService = "";   // Correspond au Sous-Service (Lane de niveau 2 / childLaneSet)
+
+            // 1. Processus (Participant)
+            const participants = xmlDoc.getElementsByTagNameNS(bpmnNS, "participant");
+            if (participants.length > 0) process = participants[0].getAttribute("name") || "";
+
+            // 2. Trouver la Lane spécifique de l'élément cliqué
+            const lanes = xmlDoc.getElementsByTagNameNS(bpmnNS, "lane");
+            let elementLane = null;
+            
+            for (let lane of lanes) {
+                const refs = lane.getElementsByTagNameNS(bpmnNS, "flowNodeRef");
+                for (let ref of refs) {
+                    if (ref.textContent === elementId) {
+                        elementLane = lane;
+                        break;
+                    }
+                }
+                if (elementLane) break;
+            }
+
+            if (elementLane) {
+                const parent = elementLane.parentNode;
+                // Si la lane est dans un childLaneSet, c'est un Sous-Service
+                if (parent && parent.localName === "childLaneSet") {
+                    sousService = elementLane.getAttribute("name") || "";
+                    // Le parent du childLaneSet est la lane de niveau 1 (Service/Sous-Processus)
+                    const parentLane = parent.parentNode;
+                    if (parentLane && parentLane.localName === "lane") {
+                        sousProcessus = parentLane.getAttribute("name") || "";
+                    }
+                } else {
+                    // Sinon, c'est une lane de niveau 1 (Service/Sous-Processus)
+                    sousProcessus = elementLane.getAttribute("name") || "";
+                }
+            }
+
+            return { process, sousProcessus, sousService };
+        }
+        // ----------------------------------------------------------------
+
         function formatFileDate() {
             const modDate = new Date(document.lastModified);
             const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -393,7 +439,6 @@
         }
         document.getElementById('file-date').textContent = formatFileDate();
 
-        // Gestion de la sauvegarde avec délai (Debounce)
         let saveTimeout = null;
         const saveIndicator = document.getElementById('save-indicator');
 
@@ -430,19 +475,31 @@
             input.addEventListener('input', function() { triggerSave(this); });
         });
 
-        // Remplissage dynamique intelligent du formulaire
-        function updateFormFields(match) {
+        function updateFormFields(match, elementId) {
             document.getElementById('panel-title').textContent = match.Activite_du_logigramme || "Détails de la tâche";
             
+            // Injection des données lues depuis le BPMN
+            const bpmnData = getProcessData(elementId);
+            match.Processus = bpmnData.process || match.Processus;
+            match.Sous_Processus = bpmnData.sousProcessus || match.Sous_Processus;
+            match.Sous_Service = bpmnData.sousService || match.Sous_Service;
+
             const inputs = document.querySelectorAll('.field-input');
             inputs.forEach(input => {
-                if (document.activeElement === input) return; // Ne pas écraser si l'utilisateur tape
-                
+                if (document.activeElement === input) return; 
                 const col = input.getAttribute('data-grist-col');
                 if (col && match[col] !== undefined) {
                     input.value = match[col] || "";
                 }
             });
+
+            // Mise à jour de la ligne de métadonnées en bas
+            const footer = document.getElementById('metadata-footer');
+            const idBpmn = match.ID_BPMN || '-';
+            const idPrim = match.ID_Primaire || '-';
+            const idParent = match.ID_BPMN_Parent || '-';
+            const maj = match.MAJ || '-';
+            footer.textContent = `Métadonnées et IDS : ID_BPMN: ${idBpmn} || ID_Primaire: ${idPrim} || ID Parent: ${idParent} || Dernière MAJ: ${maj}`;
         }
 
         async function init() {
@@ -455,7 +512,7 @@
                     
                     if (match) {
                         currentRecordId = match.id;
-                        updateFormFields(match);
+                        updateFormFields(match, e.element.id);
                         document.getElementById('side-panel').classList.add('open');
                         grist.setSelectedRows([match.id]);
                     } else {
@@ -475,7 +532,6 @@
 
         grist.onRecords((records, mappings) => {
             currentMappings = mappings;
-            
             const columns = [
                 'ID_BPMN', 'Activite_du_logigramme', 'Processus', 'Sous_Processus', 
                 'Composante_concernee', 'Sous_Service', 'Titulaire_de_la_tache', 
@@ -493,7 +549,6 @@
                     const mappedName = (mappings && mappings[col]) ? mappings[col] : col;
                     return r[mappedName];
                 };
-
                 const recordObj = { id: r.id };
                 columns.forEach(col => recordObj[col] = getVal(col));
                 return recordObj;
@@ -504,7 +559,7 @@
             if (document.getElementById('side-panel').classList.contains('open') && record.id === currentRecordId) {
                 const match = gristRecords.find(r => r.id === record.id);
                 if (match) {
-                    updateFormFields(match);
+                    updateFormFields(match, match.ID_BPMN);
                 }
             }
         });
