@@ -14,33 +14,32 @@
             width: 100%;
         }
 
-        /* Barre de date au-dessus du logigramme */
-        #timestamp-bar {
-            height: 35px;
-            line-height: 35px;
-            padding: 0 15px;
-            background: #fff;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 12px;
-            color: #555;
-            box-sizing: border-box;
-            z-index: 10;
-        }
-
+        /* Le canvas prend tout l'espace */
         #canvas { 
             position: absolute;
-            top: 35px;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
         }
 
-        /* Panneau déployé depuis le bas (50% de l'écran) */
+        /* Date et Heure en bas à droite, à côté du logo bpmn.io */
+        #timestamp-bottom {
+            position: fixed;
+            bottom: 10px;
+            right: 75px; /* Décalé pour laisser la place au logo bpmn.io (qui fait environ 60px de large) */
+            background: rgba(255, 255, 255, 0.85);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #555;
+            z-index: 10;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* Panneau déployé depuis le bas (75% de l'écran) */
         #side-panel {
             position: fixed; 
             left: 0; right: 0; 
-            bottom: -50vh; /* Caché en bas */
-            height: 50vh;  /* Moitié de l'écran */
+            bottom: -75vh; /* Caché en bas */
+            height: 75vh;  /* 75% de l'écran */
             background: white; 
             box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
             transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
@@ -50,70 +49,68 @@
         }
         #side-panel.open { bottom: 0; }
         
-        /* En-tête du panneau */
+        /* En-tête compact */
         #panel-header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px 25px; 
-            border-bottom: 2px solid #f0f0f0;
-            flex-shrink: 0; /* Empêche le header de rétrécir */
+            padding: 6px 15px; /* Padding réduit */
+            border-bottom: 1px solid #e0e0e0;
+            flex-shrink: 0; 
+            background: #fafafa;
         }
-        #panel-title { margin: 0; font-size: 18px; color: #333; flex: 1; padding-right: 10px; }
+        #panel-title { margin: 0; font-size: 15px; color: #333; flex: 1; padding-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #close-btn { 
-            cursor: pointer; font-size: 24px; border: none; background: #f0f0f0; 
-            color: #666; width: 32px; height: 32px; border-radius: 50%; 
+            cursor: pointer; font-size: 20px; border: none; background: #e0e0e0; 
+            color: #555; width: 26px; height: 26px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center;
-            transition: background 0.2s;
+            transition: background 0.2s; flex-shrink: 0;
         }
-        #close-btn:hover { background: #e0e0e0; }
+        #close-btn:hover { background: #ccc; }
 
         /* Grille de 3 colonnes pour le formulaire */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0 25px; /* Espace uniquement entre les colonnes */
-            padding: 10px 25px 25px 25px;
+            gap: 0 20px; /* Espace uniquement entre les colonnes */
+            padding: 10px 15px 15px 15px;
             overflow-y: auto; /* Scroll vertical si besoin */
             flex-grow: 1;
         }
 
         /* Titres de sections */
         .section-title {
-            font-size: 12px; font-weight: bold; color: #16b378;
+            font-size: 11px; font-weight: bold; color: #16b378;
             text-transform: uppercase; letter-spacing: 0.5px;
-            margin-top: 20px; margin-bottom: 10px; 
-            border-bottom: 1px solid #e0e0e0; padding-bottom: 5px;
-            grid-column: 1 / -1; /* Prend toute la largeur (les 3 colonnes) */
+            margin-top: 15px; margin-bottom: 5px; 
+            border-bottom: 1px solid #eee; padding-bottom: 4px;
+            grid-column: 1 / -1; /* Prend toute la largeur */
         }
         .section-title:first-of-type { margin-top: 0; }
 
         /* Champs de saisie */
-        .field-label { font-size: 12px; font-weight: 600; color: #555; margin-top: 8px; display: block; }
+        .field-label { font-size: 11px; font-weight: 600; color: #555; margin-top: 6px; display: block; }
         .field-input { 
-            width: 100%; margin-top: 4px; margin-bottom: 4px; padding: 8px 10px; 
-            border: 1px solid #ddd; border-radius: 6px; 
+            width: 100%; margin-top: 2px; margin-bottom: 2px; padding: 6px 8px; 
+            border: 1px solid #ddd; border-radius: 4px; 
             background: #fcfcfc; font-size: 13px; color: #333;
             transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
             box-sizing: border-box;
         }
         .field-input:focus {
             outline: none; border-color: #16b378; background: #fff;
-            box-shadow: 0 0 0 3px rgba(22, 179, 120, 0.15);
+            box-shadow: 0 0 0 2px rgba(22, 179, 120, 0.15);
         }
         
-        /* Gestion du Textarea pour qu'il prenne toute la ligne */
-        .full-width {
-            grid-column: 1 / -1; /* Prend toute la largeur */
-        }
+        /* Le textarea prend toute la ligne */
+        .full-width { grid-column: 1 / -1; }
         textarea.field-input { 
             resize: vertical; 
-            min-height: 50px; 
-            height: 100%; /* Prend la hauteur disponible dans la cellule */
+            min-height: 40px; 
         }
 
         /* Indicateur de sauvegarde */
         #save-indicator {
-            font-size: 11px; color: #999; margin-left: auto; padding-left: 15px; opacity: 0;
-            transition: opacity 0.3s; height: 15px;
+            font-size: 10px; color: #999; padding-left: 10px; opacity: 0;
+            transition: opacity 0.3s; white-space: nowrap;
         }
         #save-indicator.saving { opacity: 1; color: #f39c12; }
         #save-indicator.saved { opacity: 1; color: #16b378; }
@@ -122,13 +119,11 @@
 <body>
     
     <div id="main-wrapper">
-        <!-- Barre d'information de date -->
-        <div id="timestamp-bar">
-            🕒 Dernière mise à jour du fichier : <strong id="file-date">Chargement...</strong>
-        </div>
-        
-        <!-- Conteneur du logigramme -->
         <div id="canvas"></div>
+        <!-- Date déplacée ici, en bas à droite -->
+        <div id="timestamp-bottom">
+            🕒 Mise à jour : <strong id="file-date">Chargement...</strong>
+        </div>
     </div>
     
     <div id="side-panel">
@@ -138,7 +133,6 @@
             <button id="close-btn">&times;</button>
         </div>
 
-        <!-- Conteneur Grid 3 colonnes -->
         <div class="form-grid">
             <div class="section-title">Informations Générales</div>
             
@@ -157,7 +151,7 @@
                 <input type="text" id="val-periodicite" class="field-input" data-grist-col="Periodicite_de_la_tache">
             </div>
 
-            <div class="section-title">Responsables</div>
+            <div class="section-title">Responsables & Contrôles</div>
 
             <div class="form-group">
                 <span class="field-label">Titulaire de la tâche</span>
@@ -168,8 +162,6 @@
                 <span class="field-label">Suppléant</span>
                 <input type="text" id="val-suppleant" class="field-input" data-grist-col="Suppleant">
             </div>
-
-            <div class="section-title">Contrôles</div>
 
             <div class="form-group">
                 <span class="field-label">Contrôle 1er niveau</span>
@@ -205,7 +197,6 @@
 
             <div class="section-title">Divers</div>
 
-            <!-- Le textarea prend toute la largeur de la ligne grâce à la classe full-width -->
             <div class="form-group full-width">
                 <span class="field-label">Observations</span>
                 <textarea id="val-observations" class="field-input" data-grist-col="Observations"></textarea>
@@ -403,7 +394,7 @@
                     setTimeout(() => { saveIndicator.className = ""; }, 1500);
                 }).catch(err => {
                     console.error("Erreur de sauvegarde Grist:", err);
-                    saveIndicator.textContent = "Erreur de sauvegarde";
+                    saveIndicator.textContent = "Erreur";
                     saveIndicator.className = "saving"; 
                 });
             }, 500);
@@ -415,6 +406,23 @@
             });
         });
 
+        // --- Fonction intelligente de mise à jour des champs ---
+        // Cette fonction remplit les champs SAUF celui qui est en cours de saisie
+        function updateFormFields(match) {
+            document.getElementById('panel-title').textContent = match.Activite_du_logigramme || "Détails de la tâche";
+            
+            const inputs = document.querySelectorAll('.field-input');
+            inputs.forEach(input => {
+                // Si l'utilisateur est en train de taper dans ce champ, on ne l'écrase pas !
+                if (document.activeElement === input) return;
+                
+                const col = input.getAttribute('data-grist-col');
+                if (col) {
+                    input.value = match[col] || "";
+                }
+            });
+        }
+
         async function init() {
             try {
                 await viewer.importXML(bpmnXML);
@@ -425,24 +433,12 @@
                     
                     if (match) {
                         currentRecordId = match.id;
-                        document.getElementById('panel-title').textContent = match.Activite_du_logigramme || "Détails de la tâche";
-
-                        document.getElementById('val-activite').value = match.Activite_du_logigramme || "";
-                        document.getElementById('val-composante').value = match.Composante_concernee || "";
-                        document.getElementById('val-titulaire').value = match.Titulaire_de_la_tache || "";
-                        document.getElementById('val-periodicite').value = match.Periodicite_de_la_tache || "";
-                        document.getElementById('val-suppleant').value = match.Suppleant || "";
-                        document.getElementById('val-ctrl1').value = match.Titulaire_charge_du_controle_de_1er_niveau || "";
-                        document.getElementById('val-ctrlh').value = match.Titulaire_charge_du_controle_hierarchique || "";
-                        document.getElementById('val-outil').value = match.Application_outil_utilise_pour_realiser_la_tache || "";
-                        document.getElementById('val-procedure').value = match.Documentation_Fiches_de_procedure_associees || "";
-                        document.getElementById('val-sifac').value = match.Mode_operatoire_SIFAC || "";
-                        document.getElementById('val-textes').value = match.Textes_reglementation || "";
-                        document.getElementById('val-observations').value = match.Observations || "";
-
+                        updateFormFields(match); // Utilisation de la fonction intelligente
+                        
                         document.getElementById('side-panel').classList.add('open');
                         grist.setSelectedRows([match.id]);
                     } else {
+                        // Clic dans le vide : on ferme et on réinitialise l'ID
                         document.getElementById('side-panel').classList.remove('open');
                         currentRecordId = null;
                     }
@@ -452,7 +448,7 @@
 
         document.getElementById('close-btn').onclick = function() {
             document.getElementById('side-panel').classList.remove('open');
-            currentRecordId = null;
+            currentRecordId = null; // Réinitialisation à la fermeture
         };
 
         grist.ready({ requiredAccess: 'full', allowSelectBy: true });
@@ -486,23 +482,13 @@
         });
 
         grist.onRecord((record) => {
-            if (document.getElementById('side-panel').classList.contains('open')) {
+            // Si le panneau est ouvert, on s'assure qu'on ne change pas l'activité 
+            // si l'utilisateur clique sur une ligne Grist au lieu du logigramme.
+            // On met juste à jour les données (en respectant le focus)
+            if (document.getElementById('side-panel').classList.contains('open') && record.id === currentRecordId) {
                 const match = gristRecords.find(r => r.id === record.id);
                 if (match) {
-                    currentRecordId = match.id;
-                    document.getElementById('panel-title').textContent = match.Activite_du_logigramme || "Détails de la tâche";
-                    document.getElementById('val-activite').value = match.Activite_du_logigramme || "";
-                    document.getElementById('val-composante').value = match.Composante_concernee || "";
-                    document.getElementById('val-titulaire').value = match.Titulaire_de_la_tache || "";
-                    document.getElementById('val-periodicite').value = match.Periodicite_de_la_tache || "";
-                    document.getElementById('val-suppleant').value = match.Suppleant || "";
-                    document.getElementById('val-ctrl1').value = match.Titulaire_charge_du_controle_de_1er_niveau || "";
-                    document.getElementById('val-ctrlh').value = match.Titulaire_charge_du_controle_hierarchique || "";
-                    document.getElementById('val-outil').value = match.Application_outil_utilise_pour_realiser_la_tache || "";
-                    document.getElementById('val-procedure').value = match.Documentation_Fiches_de_procedure_associees || "";
-                    document.getElementById('val-sifac').value = match.Mode_operatoire_SIFAC || "";
-                    document.getElementById('val-textes').value = match.Textes_reglementation || "";
-                    document.getElementById('val-observations').value = match.Observations || "";
+                    updateFormFields(match);
                 }
             }
         });
