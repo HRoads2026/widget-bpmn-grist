@@ -6,69 +6,125 @@
     <script src="https://unpkg.com/bpmn-js@17.0.2/dist/bpmn-navigated-viewer.development.js"></script>
     <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
     <style>
-        body, html, #canvas { height: 100%; margin: 0; padding: 0; background: #f8f9fa; font-family: Arial, sans-serif; }
+        body, html, #canvas { height: 100%; margin: 0; padding: 0; background: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
+        /* Panneau latéral amélioré */
         #side-panel {
-            position: fixed; top: 0; right: -350px; width: 320px; height: 100%;
-            background: white; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-            transition: 0.3s; padding: 20px; z-index: 100;
+            position: fixed; top: 0; right: -400px; width: 380px; height: 100%;
+            background: white; box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+            transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            padding: 25px; z-index: 100;
             box-sizing: border-box; overflow-y: auto;
         }
         #side-panel.open { right: 0; }
         
-        .field-label { font-size: 11px; font-weight: bold; color: #888; text-transform: uppercase; margin-top: 10px; display: block; }
-        .field-input { width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ddd; box-sizing: border-box; background: #fcfcfc; font-size: 13px; }
-        h3 { margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; font-size: 16px; }
-        
-        /* Bouton fermer optionnel */
-        #close-btn { float: right; cursor: pointer; font-size: 20px; border: none; background: none; color: #aaa; }
+        /* En-tête du panneau */
+        #panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 15px;
+        }
+        #panel-title { margin: 0; font-size: 18px; color: #333; flex: 1; padding-right: 10px; }
+        #close-btn { 
+            cursor: pointer; font-size: 24px; border: none; background: #f0f0f0; 
+            color: #666; width: 32px; height: 32px; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.2s;
+        }
+        #close-btn:hover { background: #e0e0e0; }
+
+        /* Titres de sections (Ergonomie) */
+        .section-title {
+            font-size: 12px; font-weight: bold; color: #16b378; /* Vert Grist */
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-top: 25px; margin-bottom: 10px; 
+            border-bottom: 1px solid #e0e0e0; padding-bottom: 5px;
+        }
+        .section-title:first-of-type { margin-top: 0; }
+
+        /* Champs de saisie améliorés */
+        .field-label { font-size: 12px; font-weight: 600; color: #555; margin-top: 12px; display: block; }
+        .field-input { 
+            width: 100%; margin-top: 4px; margin-bottom: 4px; padding: 10px 12px; 
+            border: 1px solid #ddd; border-radius: 6px; 
+            background: #fcfcfc; font-size: 14px; color: #333;
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+            box-sizing: border-box;
+        }
+        .field-input:focus {
+            outline: none; border-color: #16b378; background: #fff;
+            box-shadow: 0 0 0 3px rgba(22, 179, 120, 0.15);
+        }
+        textarea.field-input { resize: vertical; min-height: 80px; }
+
+        /* Indicateur de sauvegarde */
+        #save-indicator {
+            font-size: 11px; color: #999; text-align: right; margin-top: 5px; opacity: 0;
+            transition: opacity 0.3s; height: 15px;
+        }
+        #save-indicator.saving { opacity: 1; color: #f39c12; }
+        #save-indicator.saved { opacity: 1; color: #16b378; }
     </style>
 </head>
 <body>
     <div id="canvas"></div>
     
     <div id="side-panel">
-        <button id="close-btn">&times;</button>
-        <h3 id="panel-title">Détails de la tâche</h3>
+        <div id="panel-header">
+            <h3 id="panel-title">Détails de la tâche</h3>
+            <button id="close-btn">&times;</button>
+        </div>
+
+        <div id="save-indicator"></div>
+
+        <div class="section-title">Informations Générales</div>
         
         <span class="field-label">Activité</span>
-        <input type="text" id="val-activite" class="field-input" readonly>
+        <input type="text" id="val-activite" class="field-input" data-grist-col="Activite_du_logigramme">
 
         <span class="field-label">Composante concernée</span>
-        <input type="text" id="val-composante" class="field-input" readonly>
-
-        <span class="field-label">Titulaire de la tâche</span>
-        <input type="text" id="val-titulaire" class="field-input" readonly>
+        <input type="text" id="val-composante" class="field-input" data-grist-col="Composante_concernee">
 
         <span class="field-label">Périodicité</span>
-        <input type="text" id="val-periodicite" class="field-input" readonly>
+        <input type="text" id="val-periodicite" class="field-input" data-grist-col="Periodicite_de_la_tache">
+
+        <div class="section-title">Responsables</div>
+
+        <span class="field-label">Titulaire de la tâche</span>
+        <input type="text" id="val-titulaire" class="field-input" data-grist-col="Titulaire_de_la_tache">
 
         <span class="field-label">Suppléant</span>
-        <input type="text" id="val-suppleant" class="field-input" readonly>
+        <input type="text" id="val-suppleant" class="field-input" data-grist-col="Suppleant">
+
+        <div class="section-title">Contrôles</div>
 
         <span class="field-label">Contrôle 1er niveau</span>
-        <input type="text" id="val-ctrl1" class="field-input" readonly>
+        <input type="text" id="val-ctrl1" class="field-input" data-grist-col="Titulaire_charge_du_controle_de_1er_niveau">
 
         <span class="field-label">Contrôle hiérarchique</span>
-        <input type="text" id="val-ctrlh" class="field-input" readonly>
+        <input type="text" id="val-ctrlh" class="field-input" data-grist-col="Titulaire_charge_du_controle_hierarchique">
+
+        <div class="section-title">Outils & Documentation</div>
 
         <span class="field-label">Outil / Application</span>
-        <input type="text" id="val-outil" class="field-input" readonly>
+        <input type="text" id="val-outil" class="field-input" data-grist-col="Application_outil_utilise_pour_realiser_la_tache">
 
         <span class="field-label">Fiches de procédure</span>
-        <input type="text" id="val-procedure" class="field-input" readonly>
+        <input type="text" id="val-procedure" class="field-input" data-grist-col="Documentation_Fiches_de_procedure_associees">
 
         <span class="field-label">Mode opératoire SIFAC</span>
-        <input type="text" id="val-sifac" class="field-input" readonly>
+        <input type="text" id="val-sifac" class="field-input" data-grist-col="Mode_operatoire_SIFAC">
 
         <span class="field-label">Textes / Réglementation</span>
-        <input type="text" id="val-textes" class="field-input" readonly>
+        <input type="text" id="val-textes" class="field-input" data-grist-col="Textes_reglementation">
+
+        <div class="section-title">Divers</div>
 
         <span class="field-label">Observations</span>
-        <textarea id="val-observations" class="field-input" style="height: 80px;" readonly></textarea>
+        <textarea id="val-observations" class="field-input" data-grist-col="Observations"></textarea>
     </div>
 
     <script>
+        // La variable de template est préservée ici
         const bpmnXML = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0wwwgzz" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.34.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.7.0">
   <bpmn:collaboration id="Collaboration_0rf5szf">
@@ -213,8 +269,56 @@
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>
 `;
+        
         const viewer = new BpmnJS({ container: '#canvas' });
         let gristRecords = [];
+        let currentMappings = {};
+        let currentRecordId = null;
+        
+        // Gestion de la sauvegarde avec délai (Debounce)
+        let saveTimeout = null;
+        const saveIndicator = document.getElementById('save-indicator');
+
+        function triggerSave(inputElement) {
+            if (!currentRecordId) return;
+
+            const gristCol = inputElement.getAttribute('data-grist-col');
+            if (!gristCol) return;
+
+            // On détermine le vrai nom de la colonne mappée dans Grist
+            const mappedCol = (currentMappings && currentMappings[gristCol]) ? currentMappings[gristCol] : gristCol;
+            const value = inputElement.value;
+
+            // Affichage du statut de sauvegarde
+            saveIndicator.textContent = "Enregistrement...";
+            saveIndicator.className = "saving";
+
+            // Annuler la sauvegarde précédente si l'utilisateur tape encore
+            if (saveTimeout) clearTimeout(saveTimeout);
+
+            // Lancer la nouvelle sauvegarde dans 500ms
+            saveTimeout = setTimeout(() => {
+                grist.selectedTable.update({
+                    id: currentRecordId,
+                    fields: { [mappedCol]: value }
+                }).then(() => {
+                    saveIndicator.textContent = "Enregistré ✓";
+                    saveIndicator.className = "saved";
+                    setTimeout(() => { saveIndicator.className = ""; }, 1500);
+                }).catch(err => {
+                    console.error("Erreur de sauvegarde Grist:", err);
+                    saveIndicator.textContent = "Erreur de sauvegarde";
+                    saveIndicator.className = "saving"; 
+                });
+            }, 500);
+        }
+
+        // Attacher l'événement de saisie à tous les champs
+        document.querySelectorAll('.field-input').forEach(input => {
+            input.addEventListener('input', function() {
+                triggerSave(this);
+            });
+        });
 
         async function init() {
             try {
@@ -222,10 +326,14 @@
                 viewer.get('canvas').zoom('fit-viewport');
 
                 viewer.on('element.click', (e) => {
-                    // On cherche la correspondance par l'ID de l'élément cliqué
                     const match = gristRecords.find(r => r.ID_BPMN === e.element.id);
                     
                     if (match) {
+                        currentRecordId = match.id;
+                        
+                        // Mise à jour dynamique du titre
+                        document.getElementById('panel-title').textContent = match.Activite_du_logigramme || "Détails de la tâche";
+
                         // Remplissage des champs
                         document.getElementById('val-activite').value = match.Activite_du_logigramme || "";
                         document.getElementById('val-composante').value = match.Composante_concernee || "";
@@ -243,11 +351,12 @@
                         // Ouverture du panneau
                         document.getElementById('side-panel').classList.add('open');
                         
-                        // Optionnel : Sélectionne aussi la ligne dans le tableau Grist
+                        // Sélection de la ligne dans le tableau Grist
                         grist.setSelectedRows([match.id]);
                     } else {
                         // Clic dans le vide : on ferme
                         document.getElementById('side-panel').classList.remove('open');
+                        currentRecordId = null;
                     }
                 });
             } catch (err) { console.error("Erreur BPMN:", err); }
@@ -256,12 +365,14 @@
         // Fermeture manuelle via le bouton X
         document.getElementById('close-btn').onclick = function() {
             document.getElementById('side-panel').classList.remove('open');
+            currentRecordId = null;
         };
 
         grist.ready({ requiredAccess: 'full', allowSelectBy: true });
 
         grist.onRecords((records, mappings) => {
-            // SECURITÉ : On vérifie si mappings existe pour éviter l'erreur "reading of null"
+            currentMappings = mappings; // On conserve le mapping pour la sauvegarde
+            
             gristRecords = records.map(r => {
                 const getVal = (col) => {
                     const mappedName = (mappings && mappings[col]) ? mappings[col] : col;
@@ -285,7 +396,29 @@
                     Observations: getVal('Observations')
                 };
             });
-            console.log("Données chargées :", gristRecords.length, "lignes.");
+        });
+
+        // Si l'utilisateur sélectionne une ligne dans Grist, on met à jour le panneau
+        grist.onRecord((record) => {
+            if (document.getElementById('side-panel').classList.contains('open')) {
+                const match = gristRecords.find(r => r.id === record.id);
+                if (match) {
+                    currentRecordId = match.id;
+                    document.getElementById('panel-title').textContent = match.Activite_du_logigramme || "Détails de la tâche";
+                    document.getElementById('val-activite').value = match.Activite_du_logigramme || "";
+                    document.getElementById('val-composante').value = match.Composante_concernee || "";
+                    document.getElementById('val-titulaire').value = match.Titulaire_de_la_tache || "";
+                    document.getElementById('val-periodicite').value = match.Periodicite_de_la_tache || "";
+                    document.getElementById('val-suppleant').value = match.Suppleant || "";
+                    document.getElementById('val-ctrl1').value = match.Titulaire_charge_du_controle_de_1er_niveau || "";
+                    document.getElementById('val-ctrlh').value = match.Titulaire_charge_du_controle_hierarchique || "";
+                    document.getElementById('val-outil').value = match.Application_outil_utilise_pour_realiser_la_tache || "";
+                    document.getElementById('val-procedure').value = match.Documentation_Fiches_de_procedure_associees || "";
+                    document.getElementById('val-sifac').value = match.Mode_operatoire_SIFAC || "";
+                    document.getElementById('val-textes').value = match.Textes_reglementation || "";
+                    document.getElementById('val-observations').value = match.Observations || "";
+                }
+            }
         });
 
         init();
