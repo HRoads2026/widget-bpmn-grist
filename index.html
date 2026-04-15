@@ -6,10 +6,9 @@
     <script src="https://unpkg.com/bpmn-js@17.0.2/dist/bpmn-navigated-viewer.development.js"></script>
     <script src="https://docs.getgrist.com/grist-plugin-api.js"></script>
     <style>
-        body, html { height: 100%; margin: 0; padding: 0; background: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
-        #main-wrapper { position: relative; height: 100vh; width: 100%; }
-        #canvas { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+        /* Structure essentielle pour le rendu de BPMN-JS */
+        body, html { height: 100%; margin: 0; padding: 0; width: 100%; background: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
+        #canvas { height: 100%; width: 100%; }
 
         /* Date et Heure en bas à droite */
         #timestamp-bottom {
@@ -46,7 +45,7 @@
         .form-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 0 16px; /* Espace entre les colonnes */
+            gap: 0 16px; 
             padding: 15px 20px 20px 20px;
             overflow-y: auto; flex-grow: 1;
         }
@@ -57,7 +56,7 @@
             text-transform: uppercase; letter-spacing: 1px;
             margin-top: 18px; margin-bottom: 4px; 
             border-bottom: 2px solid #16b378; padding-bottom: 4px;
-            grid-column: 1 / -1; /* Prend toute la largeur */
+            grid-column: 1 / -1; 
         }
         .section-title:first-of-type { margin-top: 0; }
 
@@ -75,13 +74,14 @@
         }
         
         /* Classes d'occupation de la grille */
-        .col-3 { grid-column: span 3; } /* Moitié de la ligne (3 colonnes sur 6) - Idéal pour Nom + Fonction */
-        .col-6 { grid-column: span 6; } /* Toute la ligne */
-        .col-2 { grid-column: span 2; } /* Tiers de la ligne - Idéal pour les IDs */
+        .col-3 { grid-column: span 3; } 
+        .col-6 { grid-column: span 6; } 
+        .col-2 { grid-column: span 2; } 
         
         /* Style spécial pour les métadonnées (Bas du formulaire) */
-        .meta-section .field-label { font-size: 10px; color: #888; }
+        .meta-section .field-label { font-size: 10px; color: #888; margin-top: 5px; }
         .meta-section .field-input { font-size: 11px; padding: 5px 8px; background: #f7f7f7; border-color: #eee; }
+        .meta-section .section-title { border-bottom: 1px solid #ddd; color: #888; margin-top: 10px; }
         
         textarea.field-input { resize: vertical; min-height: 50px; }
 
@@ -96,10 +96,10 @@
 </head>
 <body>
     
-    <div id="main-wrapper">
-        <div id="canvas"></div>
-        <div id="timestamp-bottom">🕒 Mise à jour : <strong id="file-date">Chargement...</strong></div>
-    </div>
+    <!-- Le canvas est directement sous body avec un height:100% -->
+    <div id="canvas"></div>
+    
+    <div id="timestamp-bottom">🕒 Mise à jour : <strong id="file-date">Chargement...</strong></div>
     
     <div id="side-panel">
         <div id="panel-header">
@@ -210,31 +210,176 @@
             </div>
 
             <!-- BLOC 4 : MÉTADONNÉES (Style réduit) -->
-            <div class="section-title meta-section">Métadonnées & IDs</div>
+            <div class="meta-section">
+                <div class="section-title">Métadonnées & IDs</div>
 
-            <div class="col-2">
-                <span class="field-label">ID BPMN</span>
-                <input type="text" class="field-input" data-grist-col="ID_BPMN" readonly>
-            </div>
-            <div class="col-2">
-                <span class="field-label">ID Primaire</span>
-                <input type="text" class="field-input" data-grist-col="ID_Primaire" readonly>
-            </div>
-            <div class="col-2">
-                <span class="field-label">ID Parent</span>
-                <input type="text" class="field-input" data-grist-col="ID_BPMN_Parent" readonly>
-            </div>
-            
-            <div class="col-6">
-                <span class="field-label">Dernière MAJ</span>
-                <input type="text" class="field-input" data-grist-col="MAJ" readonly>
+                <div class="col-2">
+                    <span class="field-label">ID BPMN</span>
+                    <input type="text" class="field-input" data-grist-col="ID_BPMN" readonly>
+                </div>
+                <div class="col-2">
+                    <span class="field-label">ID Primaire</span>
+                    <input type="text" class="field-input" data-grist-col="ID_Primaire" readonly>
+                </div>
+                <div class="col-2">
+                    <span class="field-label">ID Parent</span>
+                    <input type="text" class="field-input" data-grist-col="ID_BPMN_Parent" readonly>
+                </div>
+                
+                <div class="col-6">
+                    <span class="field-label">Dernière MAJ</span>
+                    <input type="text" class="field-input" data-grist-col="MAJ" readonly>
+                </div>
             </div>
 
         </div>
     </div>
 
     <script>
-        const bpmnXML = `[[BPMN_CONTENT]]`;
+        const bpmnXML = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0wwwgzz" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.34.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.7.0">
+  <bpmn:collaboration id="Collaboration_0rf5szf">
+    <bpmn:participant id="Participant_1hp00ld" name="TETE" processRef="Process_02fzt0f" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_02fzt0f" isExecutable="true">
+    <bpmn:laneSet id="LaneSet_1h3k2vv">
+      <bpmn:lane id="Lane_1pc600n" name="Ligne 1">
+        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_1vls4ew</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_05ywrny</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_0pgrjsp" name="Ligne A">
+        <bpmn:flowNodeRef>Activity_0ecmqc1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_0qweq5d</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Activity_1eiltmz</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_0eor53r</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Activity_1vls4ew" name="Tache_Devis">
+      <bpmn:incoming>Flow_0eor53r</bpmn:incoming>
+      <bpmn:outgoing>Flow_1ahtq33</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_0eor53r" sourceRef="StartEvent_1" targetRef="Activity_1vls4ew" />
+    <bpmn:task id="Activity_05ywrny" name="Tache_Facture">
+      <bpmn:incoming>Flow_1ahtq33</bpmn:incoming>
+      <bpmn:outgoing>Flow_1qo80sp</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_1ahtq33" sourceRef="Activity_1vls4ew" targetRef="Activity_05ywrny" />
+    <bpmn:sequenceFlow id="Flow_1qo80sp" sourceRef="Activity_05ywrny" targetRef="Activity_0ecmqc1" />
+    <bpmn:task id="Activity_0ecmqc1" name="bof">
+      <bpmn:incoming>Flow_1qo80sp</bpmn:incoming>
+      <bpmn:outgoing>Flow_0myd61g</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:subProcess id="Activity_1eiltmz" name="hum">
+      <bpmn:incoming>Flow_0myd61g</bpmn:incoming>
+      <bpmn:outgoing>Flow_0qchd7x</bpmn:outgoing>
+      <bpmn:task id="Activity_1s1nvgw" name="Alors">
+        <bpmn:outgoing>Flow_00hq2pf</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:task id="Activity_0934aq8" name="OK">
+        <bpmn:incoming>Flow_00hq2pf</bpmn:incoming>
+        <bpmn:outgoing>Flow_1jw4tc8</bpmn:outgoing>
+      </bpmn:task>
+      <bpmn:sequenceFlow id="Flow_00hq2pf" sourceRef="Activity_1s1nvgw" targetRef="Activity_0934aq8" />
+      <bpmn:task id="Activity_0vnlq99" name="hey">
+        <bpmn:incoming>Flow_1jw4tc8</bpmn:incoming>
+      </bpmn:task>
+      <bpmn:sequenceFlow id="Flow_1jw4tc8" sourceRef="Activity_0934aq8" targetRef="Activity_0vnlq99" />
+    </bpmn:subProcess>
+    <bpmn:sequenceFlow id="Flow_0myd61g" sourceRef="Activity_0ecmqc1" targetRef="Activity_1eiltmz" />
+    <bpmn:endEvent id="Event_0qweq5d">
+      <bpmn:incoming>Flow_0qchd7x</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_0qchd7x" sourceRef="Activity_1eiltmz" targetRef="Event_0qweq5d" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0rf5szf">
+      <bpmndi:BPMNShape id="Participant_1hp00ld_di" bpmnElement="Participant_1hp00ld" isHorizontal="true">
+        <dc:Bounds x="132" y="110" width="916" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_1pc600n_di" bpmnElement="Lane_1pc600n" isHorizontal="true">
+        <dc:Bounds x="162" y="110" width="886" height="125" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_0pgrjsp_di" bpmnElement="Lane_0pgrjsp" isHorizontal="true">
+        <dc:Bounds x="162" y="235" width="886" height="125" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="182" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1vls4ew_di" bpmnElement="Activity_1vls4ew">
+        <dc:Bounds x="270" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_05ywrny_di" bpmnElement="Activity_05ywrny">
+        <dc:Bounds x="430" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ecmqc1_di" bpmnElement="Activity_0ecmqc1">
+        <dc:Bounds x="590" y="270" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0qweq5d_di" bpmnElement="Event_0qweq5d">
+        <dc:Bounds x="912" y="292" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1eiltmz_di" bpmnElement="Activity_1eiltmz">
+        <dc:Bounds x="750" y="270" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0eor53r_di" bpmnElement="Flow_0eor53r">
+        <di:waypoint x="218" y="180" />
+        <di:waypoint x="270" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ahtq33_di" bpmnElement="Flow_1ahtq33">
+        <di:waypoint x="370" y="180" />
+        <di:waypoint x="430" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qo80sp_di" bpmnElement="Flow_1qo80sp">
+        <di:waypoint x="530" y="180" />
+        <di:waypoint x="560" y="180" />
+        <di:waypoint x="560" y="310" />
+        <di:waypoint x="590" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0myd61g_di" bpmnElement="Flow_0myd61g">
+        <di:waypoint x="690" y="310" />
+        <di:waypoint x="750" y="310" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0qchd7x_di" bpmnElement="Flow_0qchd7x">
+        <di:waypoint x="850" y="310" />
+        <di:waypoint x="912" y="310" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1hyhkq1">
+    <bpmndi:BPMNPlane id="BPMNPlane_0eelnqp" bpmnElement="Activity_1eiltmz">
+      <bpmndi:BPMNShape id="Activity_1s1nvgw_di" bpmnElement="Activity_1s1nvgw">
+        <dc:Bounds x="240" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0934aq8_di" bpmnElement="Activity_0934aq8">
+        <dc:Bounds x="390" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0vnlq99_di" bpmnElement="Activity_0vnlq99">
+        <dc:Bounds x="540" y="230" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_00hq2pf_di" bpmnElement="Flow_00hq2pf">
+        <di:waypoint x="340" y="270" />
+        <di:waypoint x="390" y="270" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1jw4tc8_di" bpmnElement="Flow_1jw4tc8">
+        <di:waypoint x="490" y="270" />
+        <di:waypoint x="540" y="270" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
+`;
         const viewer = new BpmnJS({ container: '#canvas' });
         let gristRecords = [];
         let currentMappings = {};
@@ -331,7 +476,6 @@
         grist.onRecords((records, mappings) => {
             currentMappings = mappings;
             
-            // Liste de toutes les colonnes à récupérer de Grist
             const columns = [
                 'ID_BPMN', 'Activite_du_logigramme', 'Processus', 'Sous_Processus', 
                 'Composante_concernee', 'Sous_Service', 'Titulaire_de_la_tache', 
@@ -357,7 +501,6 @@
         });
 
         grist.onRecord((record) => {
-            // Ne mettre à jour que si la ligne correspond à l'activité actuellement ouverte
             if (document.getElementById('side-panel').classList.contains('open') && record.id === currentRecordId) {
                 const match = gristRecords.find(r => r.id === record.id);
                 if (match) {
