@@ -8,108 +8,86 @@
     <style>
         body, html { height: 100%; margin: 0; padding: 0; background: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        #main-wrapper {
-            position: relative;
-            height: 100vh;
-            width: 100%;
-        }
+        #main-wrapper { position: relative; height: 100vh; width: 100%; }
+        #canvas { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
 
-        /* Le canvas prend tout l'espace */
-        #canvas { 
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-        }
-
-        /* Date et Heure en bas à droite, à côté du logo bpmn.io */
+        /* Date et Heure en bas à droite */
         #timestamp-bottom {
-            position: fixed;
-            bottom: 10px;
-            right: 75px; /* Décalé pour laisser la place au logo bpmn.io (qui fait environ 60px de large) */
-            background: rgba(255, 255, 255, 0.85);
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            color: #555;
-            z-index: 10;
+            position: fixed; bottom: 10px; right: 75px; 
+            background: rgba(255, 255, 255, 0.85); padding: 4px 10px;
+            border-radius: 4px; font-size: 11px; color: #555; z-index: 10;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         /* Panneau déployé depuis le bas (75% de l'écran) */
         #side-panel {
-            position: fixed; 
-            left: 0; right: 0; 
-            bottom: -75vh; /* Caché en bas */
-            height: 75vh;  /* 75% de l'écran */
-            background: white; 
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
-            transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
+            position: fixed; left: 0; right: 0; bottom: -75vh; height: 75vh;
+            background: white; box-shadow: 0 -6px 25px rgba(0,0,0,0.15);
+            transition: bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 100;
+            display: flex; flex-direction: column;
         }
         #side-panel.open { bottom: 0; }
         
         /* En-tête compact */
         #panel-header {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 6px 15px; /* Padding réduit */
-            border-bottom: 1px solid #e0e0e0;
-            flex-shrink: 0; 
-            background: #fafafa;
+            padding: 8px 20px; border-bottom: 2px solid #16b378; flex-shrink: 0; background: #fff;
         }
-        #panel-title { margin: 0; font-size: 15px; color: #333; flex: 1; padding-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        #panel-title { margin: 0; font-size: 16px; color: #16b378; font-weight: 600; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         #close-btn { 
-            cursor: pointer; font-size: 20px; border: none; background: #e0e0e0; 
-            color: #555; width: 26px; height: 26px; border-radius: 50%; 
+            cursor: pointer; font-size: 22px; border: none; background: #f0f0f0; 
+            color: #555; width: 28px; height: 28px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center;
             transition: background 0.2s; flex-shrink: 0;
         }
-        #close-btn:hover { background: #ccc; }
+        #close-btn:hover { background: #ddd; }
 
-        /* Grille de 3 colonnes pour le formulaire */
+        /* Grille de 6 colonnes pour une flexibilité maximale */
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0 20px; /* Espace uniquement entre les colonnes */
-            padding: 10px 15px 15px 15px;
-            overflow-y: auto; /* Scroll vertical si besoin */
-            flex-grow: 1;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0 16px; /* Espace entre les colonnes */
+            padding: 15px 20px 20px 20px;
+            overflow-y: auto; flex-grow: 1;
         }
 
         /* Titres de sections */
         .section-title {
-            font-size: 11px; font-weight: bold; color: #16b378;
-            text-transform: uppercase; letter-spacing: 0.5px;
-            margin-top: 15px; margin-bottom: 5px; 
-            border-bottom: 1px solid #eee; padding-bottom: 4px;
+            font-size: 11px; font-weight: bold; color: #333;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-top: 18px; margin-bottom: 4px; 
+            border-bottom: 2px solid #16b378; padding-bottom: 4px;
             grid-column: 1 / -1; /* Prend toute la largeur */
         }
         .section-title:first-of-type { margin-top: 0; }
 
         /* Champs de saisie */
-        .field-label { font-size: 11px; font-weight: 600; color: #555; margin-top: 6px; display: block; }
+        .field-label { font-size: 11px; font-weight: 600; color: #555; margin-top: 8px; display: block; }
         .field-input { 
-            width: 100%; margin-top: 2px; margin-bottom: 2px; padding: 6px 8px; 
+            width: 100%; margin-top: 2px; margin-bottom: 2px; padding: 7px 10px; 
             border: 1px solid #ddd; border-radius: 4px; 
             background: #fcfcfc; font-size: 13px; color: #333;
-            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-            box-sizing: border-box;
+            transition: border-color 0.2s, box-shadow 0.2s; box-sizing: border-box;
         }
         .field-input:focus {
             outline: none; border-color: #16b378; background: #fff;
             box-shadow: 0 0 0 2px rgba(22, 179, 120, 0.15);
         }
         
-        /* Le textarea prend toute la ligne */
-        .full-width { grid-column: 1 / -1; }
-        textarea.field-input { 
-            resize: vertical; 
-            min-height: 40px; 
-        }
+        /* Classes d'occupation de la grille */
+        .col-3 { grid-column: span 3; } /* Moitié de la ligne (3 colonnes sur 6) - Idéal pour Nom + Fonction */
+        .col-6 { grid-column: span 6; } /* Toute la ligne */
+        .col-2 { grid-column: span 2; } /* Tiers de la ligne - Idéal pour les IDs */
+        
+        /* Style spécial pour les métadonnées (Bas du formulaire) */
+        .meta-section .field-label { font-size: 10px; color: #888; }
+        .meta-section .field-input { font-size: 11px; padding: 5px 8px; background: #f7f7f7; border-color: #eee; }
+        
+        textarea.field-input { resize: vertical; min-height: 50px; }
 
         /* Indicateur de sauvegarde */
         #save-indicator {
-            font-size: 10px; color: #999; padding-left: 10px; opacity: 0;
+            font-size: 10px; color: #999; padding-left: 15px; opacity: 0;
             transition: opacity 0.3s; white-space: nowrap;
         }
         #save-indicator.saving { opacity: 1; color: #f39c12; }
@@ -120,10 +98,7 @@
     
     <div id="main-wrapper">
         <div id="canvas"></div>
-        <!-- Date déplacée ici, en bas à droite -->
-        <div id="timestamp-bottom">
-            🕒 Mise à jour : <strong id="file-date">Chargement...</strong>
-        </div>
+        <div id="timestamp-bottom">🕒 Mise à jour : <strong id="file-date">Chargement...</strong></div>
     </div>
     
     <div id="side-panel">
@@ -134,237 +109,144 @@
         </div>
 
         <div class="form-grid">
-            <div class="section-title">Informations Générales</div>
             
-            <div class="form-group">
-                <span class="field-label">Activité</span>
-                <input type="text" id="val-activite" class="field-input" data-grist-col="Activite_du_logigramme">
+            <!-- BLOC 1 : ORGANISATION & PROCESSUS -->
+            <div class="section-title">Organisation & Processus</div>
+            
+            <div class="col-3">
+                <span class="field-label">Processus</span>
+                <input type="text" class="field-input" data-grist-col="Processus">
             </div>
-
-            <div class="form-group">
+            <div class="col-3">
+                <span class="field-label">Sous-Processus</span>
+                <input type="text" class="field-input" data-grist-col="Sous_Processus">
+            </div>
+            <div class="col-3">
                 <span class="field-label">Composante concernée</span>
-                <input type="text" id="val-composante" class="field-input" data-grist-col="Composante_concernee">
+                <input type="text" class="field-input" data-grist-col="Composante_concernee">
+            </div>
+            <div class="col-3">
+                <span class="field-label">Sous-Service</span>
+                <input type="text" class="field-input" data-grist-col="Sous_Service">
+            </div>
+            <div class="col-6">
+                <span class="field-label">Activité du logigramme</span>
+                <input type="text" class="field-input" data-grist-col="Activite_du_logigramme">
             </div>
 
-            <div class="form-group">
-                <span class="field-label">Périodicité</span>
-                <input type="text" id="val-periodicite" class="field-input" data-grist-col="Periodicite_de_la_tache">
-            </div>
-
+            <!-- BLOC 2 : RESPONSABLES & CONTRÔLES -->
             <div class="section-title">Responsables & Contrôles</div>
 
-            <div class="form-group">
+            <div class="col-3">
                 <span class="field-label">Titulaire de la tâche</span>
-                <input type="text" id="val-titulaire" class="field-input" data-grist-col="Titulaire_de_la_tache">
+                <input type="text" class="field-input" data-grist-col="Titulaire_de_la_tache">
             </div>
-
-            <div class="form-group">
+            <div class="col-3">
+                <span class="field-label">Fonction du titulaire</span>
+                <input type="text" class="field-input" data-grist-col="Fonction_du_tituaire">
+            </div>
+            
+            <div class="col-3">
                 <span class="field-label">Suppléant</span>
-                <input type="text" id="val-suppleant" class="field-input" data-grist-col="Suppleant">
+                <input type="text" class="field-input" data-grist-col="Suppleant">
+            </div>
+            <div class="col-3">
+                <span class="field-label">Fonction du suppléant</span>
+                <input type="text" class="field-input" data-grist-col="Fonction_du_suppleant">
             </div>
 
-            <div class="form-group">
+            <div class="col-3">
                 <span class="field-label">Contrôle 1er niveau</span>
-                <input type="text" id="val-ctrl1" class="field-input" data-grist-col="Titulaire_charge_du_controle_de_1er_niveau">
+                <input type="text" class="field-input" data-grist-col="Titulaire_charge_du_controle_de_1er_niveau">
+            </div>
+            <div class="col-3">
+                <span class="field-label">Fonction (Ctrl 1er niv.)</span>
+                <input type="text" class="field-input" data-grist-col="Fonction_du_titulaire_charge_du_controle_de_1er_niveau">
             </div>
 
-            <div class="form-group">
+            <div class="col-3">
                 <span class="field-label">Contrôle hiérarchique</span>
-                <input type="text" id="val-ctrlh" class="field-input" data-grist-col="Titulaire_charge_du_controle_hierarchique">
+                <input type="text" class="field-input" data-grist-col="Titulaire_charge_du_controle_hierarchique">
+            </div>
+            <div class="col-3">
+                <span class="field-label">Fonction (Ctrl hiér.)</span>
+                <input type="text" class="field-input" data-grist-col="Fonction_du_titulaire_charge_du_controle_hierarchique">
             </div>
 
-            <div class="section-title">Outils & Documentation</div>
+            <!-- BLOC 3 : EXÉCUTION & DOCUMENTATION -->
+            <div class="section-title">Exécution & Documentation</div>
 
-            <div class="form-group">
+            <div class="col-3">
+                <span class="field-label">Périodicité</span>
+                <input type="text" class="field-input" data-grist-col="Periodicite_de_la_tache">
+            </div>
+            <div class="col-3">
+                <span class="field-label">Traçabilité</span>
+                <input type="text" class="field-input" data-grist-col="Tracabilite_de_la_tache">
+            </div>
+            
+            <div class="col-6">
                 <span class="field-label">Outil / Application</span>
-                <input type="text" id="val-outil" class="field-input" data-grist-col="Application_outil_utilise_pour_realiser_la_tache">
+                <input type="text" class="field-input" data-grist-col="Application_outil_utilise_pour_realiser_la_tache">
             </div>
-
-            <div class="form-group">
+            
+            <div class="col-6">
                 <span class="field-label">Fiches de procédure</span>
-                <input type="text" id="val-procedure" class="field-input" data-grist-col="Documentation_Fiches_de_procedure_associees">
+                <input type="text" class="field-input" data-grist-col="Documentation_Fiches_de_procedure_associees">
             </div>
-
-            <div class="form-group">
+            
+            <div class="col-3">
                 <span class="field-label">Mode opératoire SIFAC</span>
-                <input type="text" id="val-sifac" class="field-input" data-grist-col="Mode_operatoire_SIFAC">
+                <input type="text" class="field-input" data-grist-col="Mode_operatoire_SIFAC">
             </div>
-
-            <div class="form-group">
+            <div class="col-3">
                 <span class="field-label">Textes / Réglementation</span>
-                <input type="text" id="val-textes" class="field-input" data-grist-col="Textes_reglementation">
+                <input type="text" class="field-input" data-grist-col="Textes_reglementation">
             </div>
 
-            <div class="section-title">Divers</div>
-
-            <div class="form-group full-width">
+            <div class="col-6">
                 <span class="field-label">Observations</span>
-                <textarea id="val-observations" class="field-input" data-grist-col="Observations"></textarea>
+                <textarea class="field-input" data-grist-col="Observations"></textarea>
             </div>
+
+            <!-- BLOC 4 : MÉTADONNÉES (Style réduit) -->
+            <div class="section-title meta-section">Métadonnées & IDs</div>
+
+            <div class="col-2">
+                <span class="field-label">ID BPMN</span>
+                <input type="text" class="field-input" data-grist-col="ID_BPMN" readonly>
+            </div>
+            <div class="col-2">
+                <span class="field-label">ID Primaire</span>
+                <input type="text" class="field-input" data-grist-col="ID_Primaire" readonly>
+            </div>
+            <div class="col-2">
+                <span class="field-label">ID Parent</span>
+                <input type="text" class="field-input" data-grist-col="ID_BPMN_Parent" readonly>
+            </div>
+            
+            <div class="col-6">
+                <span class="field-label">Dernière MAJ</span>
+                <input type="text" class="field-input" data-grist-col="MAJ" readonly>
+            </div>
+
         </div>
     </div>
 
     <script>
-        const bpmnXML = `<?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0wwwgzz" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.34.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.7.0">
-  <bpmn:collaboration id="Collaboration_0rf5szf">
-    <bpmn:participant id="Participant_1hp00ld" name="TETE" processRef="Process_02fzt0f" />
-  </bpmn:collaboration>
-  <bpmn:process id="Process_02fzt0f" isExecutable="true">
-    <bpmn:laneSet id="LaneSet_1h3k2vv">
-      <bpmn:lane id="Lane_1pc600n" name="Ligne 1">
-        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Activity_1vls4ew</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Activity_05ywrny</bpmn:flowNodeRef>
-      </bpmn:lane>
-      <bpmn:lane id="Lane_0pgrjsp" name="Ligne A">
-        <bpmn:flowNodeRef>Activity_0ecmqc1</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Event_0qweq5d</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Activity_1eiltmz</bpmn:flowNodeRef>
-      </bpmn:lane>
-    </bpmn:laneSet>
-    <bpmn:startEvent id="StartEvent_1">
-      <bpmn:outgoing>Flow_0eor53r</bpmn:outgoing>
-    </bpmn:startEvent>
-    <bpmn:task id="Activity_1vls4ew" name="Tache_Devis">
-      <bpmn:incoming>Flow_0eor53r</bpmn:incoming>
-      <bpmn:outgoing>Flow_1ahtq33</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_0eor53r" sourceRef="StartEvent_1" targetRef="Activity_1vls4ew" />
-    <bpmn:task id="Activity_05ywrny" name="Tache_Facture">
-      <bpmn:incoming>Flow_1ahtq33</bpmn:incoming>
-      <bpmn:outgoing>Flow_1qo80sp</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:sequenceFlow id="Flow_1ahtq33" sourceRef="Activity_1vls4ew" targetRef="Activity_05ywrny" />
-    <bpmn:sequenceFlow id="Flow_1qo80sp" sourceRef="Activity_05ywrny" targetRef="Activity_0ecmqc1" />
-    <bpmn:task id="Activity_0ecmqc1" name="bof">
-      <bpmn:incoming>Flow_1qo80sp</bpmn:incoming>
-      <bpmn:outgoing>Flow_0myd61g</bpmn:outgoing>
-    </bpmn:task>
-    <bpmn:subProcess id="Activity_1eiltmz" name="hum">
-      <bpmn:incoming>Flow_0myd61g</bpmn:incoming>
-      <bpmn:outgoing>Flow_0qchd7x</bpmn:outgoing>
-      <bpmn:task id="Activity_1s1nvgw" name="Alors">
-        <bpmn:outgoing>Flow_00hq2pf</bpmn:outgoing>
-      </bpmn:task>
-      <bpmn:task id="Activity_0934aq8" name="OK">
-        <bpmn:incoming>Flow_00hq2pf</bpmn:incoming>
-        <bpmn:outgoing>Flow_1jw4tc8</bpmn:outgoing>
-      </bpmn:task>
-      <bpmn:sequenceFlow id="Flow_00hq2pf" sourceRef="Activity_1s1nvgw" targetRef="Activity_0934aq8" />
-      <bpmn:task id="Activity_0vnlq99" name="hey">
-        <bpmn:incoming>Flow_1jw4tc8</bpmn:incoming>
-      </bpmn:task>
-      <bpmn:sequenceFlow id="Flow_1jw4tc8" sourceRef="Activity_0934aq8" targetRef="Activity_0vnlq99" />
-    </bpmn:subProcess>
-    <bpmn:sequenceFlow id="Flow_0myd61g" sourceRef="Activity_0ecmqc1" targetRef="Activity_1eiltmz" />
-    <bpmn:endEvent id="Event_0qweq5d">
-      <bpmn:incoming>Flow_0qchd7x</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="Flow_0qchd7x" sourceRef="Activity_1eiltmz" targetRef="Event_0qweq5d" />
-  </bpmn:process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_0rf5szf">
-      <bpmndi:BPMNShape id="Participant_1hp00ld_di" bpmnElement="Participant_1hp00ld" isHorizontal="true">
-        <dc:Bounds x="132" y="110" width="916" height="250" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_1pc600n_di" bpmnElement="Lane_1pc600n" isHorizontal="true">
-        <dc:Bounds x="162" y="110" width="886" height="125" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_0pgrjsp_di" bpmnElement="Lane_0pgrjsp" isHorizontal="true">
-        <dc:Bounds x="162" y="235" width="886" height="125" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
-        <dc:Bounds x="182" y="162" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1vls4ew_di" bpmnElement="Activity_1vls4ew">
-        <dc:Bounds x="270" y="140" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_05ywrny_di" bpmnElement="Activity_05ywrny">
-        <dc:Bounds x="430" y="140" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0ecmqc1_di" bpmnElement="Activity_0ecmqc1">
-        <dc:Bounds x="590" y="270" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Event_0qweq5d_di" bpmnElement="Event_0qweq5d">
-        <dc:Bounds x="912" y="292" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_1eiltmz_di" bpmnElement="Activity_1eiltmz">
-        <dc:Bounds x="750" y="270" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_0eor53r_di" bpmnElement="Flow_0eor53r">
-        <di:waypoint x="218" y="180" />
-        <di:waypoint x="270" y="180" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1ahtq33_di" bpmnElement="Flow_1ahtq33">
-        <di:waypoint x="370" y="180" />
-        <di:waypoint x="430" y="180" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1qo80sp_di" bpmnElement="Flow_1qo80sp">
-        <di:waypoint x="530" y="180" />
-        <di:waypoint x="560" y="180" />
-        <di:waypoint x="560" y="310" />
-        <di:waypoint x="590" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0myd61g_di" bpmnElement="Flow_0myd61g">
-        <di:waypoint x="690" y="310" />
-        <di:waypoint x="750" y="310" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_0qchd7x_di" bpmnElement="Flow_0qchd7x">
-        <di:waypoint x="850" y="310" />
-        <di:waypoint x="912" y="310" />
-      </bpmndi:BPMNEdge>
-    </bpmndi:BPMNPlane>
-  </bpmndi:BPMNDiagram>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_1hyhkq1">
-    <bpmndi:BPMNPlane id="BPMNPlane_0eelnqp" bpmnElement="Activity_1eiltmz">
-      <bpmndi:BPMNShape id="Activity_1s1nvgw_di" bpmnElement="Activity_1s1nvgw">
-        <dc:Bounds x="240" y="230" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0934aq8_di" bpmnElement="Activity_0934aq8">
-        <dc:Bounds x="390" y="230" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_0vnlq99_di" bpmnElement="Activity_0vnlq99">
-        <dc:Bounds x="540" y="230" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_00hq2pf_di" bpmnElement="Flow_00hq2pf">
-        <di:waypoint x="340" y="270" />
-        <di:waypoint x="390" y="270" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_1jw4tc8_di" bpmnElement="Flow_1jw4tc8">
-        <di:waypoint x="490" y="270" />
-        <di:waypoint x="540" y="270" />
-      </bpmndi:BPMNEdge>
-    </bpmndi:BPMNPlane>
-  </bpmndi:BPMNDiagram>
-</bpmn:definitions>
-`;
+        const bpmnXML = `[[BPMN_CONTENT]]`;
         const viewer = new BpmnJS({ container: '#canvas' });
         let gristRecords = [];
         let currentMappings = {};
         let currentRecordId = null;
         
-        // --- Gestion de la date de mise à jour du fichier ---
+        // Gestion de la date de mise à jour du fichier
         function formatFileDate() {
             const modDate = new Date(document.lastModified);
-            const options = { 
-                day: '2-digit', month: '2-digit', year: 'numeric', 
-                hour: '2-digit', minute: '2-digit' 
-            };
+            const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
             return modDate.toLocaleDateString('fr-FR', options);
         }
         document.getElementById('file-date').textContent = formatFileDate();
-        // ------------------------------------------------
 
         // Gestion de la sauvegarde avec délai (Debounce)
         let saveTimeout = null;
@@ -372,7 +254,6 @@
 
         function triggerSave(inputElement) {
             if (!currentRecordId) return;
-
             const gristCol = inputElement.getAttribute('data-grist-col');
             if (!gristCol) return;
 
@@ -393,7 +274,7 @@
                     saveIndicator.className = "saved";
                     setTimeout(() => { saveIndicator.className = ""; }, 1500);
                 }).catch(err => {
-                    console.error("Erreur de sauvegarde Grist:", err);
+                    console.error("Erreur Grist:", err);
                     saveIndicator.textContent = "Erreur";
                     saveIndicator.className = "saving"; 
                 });
@@ -401,23 +282,19 @@
         }
 
         document.querySelectorAll('.field-input').forEach(input => {
-            input.addEventListener('input', function() {
-                triggerSave(this);
-            });
+            input.addEventListener('input', function() { triggerSave(this); });
         });
 
-        // --- Fonction intelligente de mise à jour des champs ---
-        // Cette fonction remplit les champs SAUF celui qui est en cours de saisie
+        // Remplissage dynamique intelligent du formulaire
         function updateFormFields(match) {
             document.getElementById('panel-title').textContent = match.Activite_du_logigramme || "Détails de la tâche";
             
             const inputs = document.querySelectorAll('.field-input');
             inputs.forEach(input => {
-                // Si l'utilisateur est en train de taper dans ce champ, on ne l'écrase pas !
-                if (document.activeElement === input) return;
+                if (document.activeElement === input) return; // Ne pas écraser si l'utilisateur tape
                 
                 const col = input.getAttribute('data-grist-col');
-                if (col) {
+                if (col && match[col] !== undefined) {
                     input.value = match[col] || "";
                 }
             });
@@ -433,12 +310,10 @@
                     
                     if (match) {
                         currentRecordId = match.id;
-                        updateFormFields(match); // Utilisation de la fonction intelligente
-                        
+                        updateFormFields(match);
                         document.getElementById('side-panel').classList.add('open');
                         grist.setSelectedRows([match.id]);
                     } else {
-                        // Clic dans le vide : on ferme et on réinitialise l'ID
                         document.getElementById('side-panel').classList.remove('open');
                         currentRecordId = null;
                     }
@@ -448,7 +323,7 @@
 
         document.getElementById('close-btn').onclick = function() {
             document.getElementById('side-panel').classList.remove('open');
-            currentRecordId = null; // Réinitialisation à la fermeture
+            currentRecordId = null;
         };
 
         grist.ready({ requiredAccess: 'full', allowSelectBy: true });
@@ -456,35 +331,33 @@
         grist.onRecords((records, mappings) => {
             currentMappings = mappings;
             
+            // Liste de toutes les colonnes à récupérer de Grist
+            const columns = [
+                'ID_BPMN', 'Activite_du_logigramme', 'Processus', 'Sous_Processus', 
+                'Composante_concernee', 'Sous_Service', 'Titulaire_de_la_tache', 
+                'Fonction_du_tituaire', 'Suppleant', 'Fonction_du_suppleant', 
+                'Titulaire_charge_du_controle_de_1er_niveau', 'Fonction_du_titulaire_charge_du_controle_de_1er_niveau', 
+                'Titulaire_charge_du_controle_hierarchique', 'Fonction_du_titulaire_charge_du_controle_hierarchique', 
+                'Periodicite_de_la_tache', 'Tracabilite_de_la_tache', 
+                'Application_outil_utilise_pour_realiser_la_tache', 'Documentation_Fiches_de_procedure_associees', 
+                'Mode_operatoire_SIFAC', 'Textes_reglementation', 'Observations', 
+                'ID_Primaire', 'ID_BPMN_Parent', 'MAJ'
+            ];
+
             gristRecords = records.map(r => {
                 const getVal = (col) => {
                     const mappedName = (mappings && mappings[col]) ? mappings[col] : col;
                     return r[mappedName];
                 };
 
-                return {
-                    id: r.id,
-                    ID_BPMN: getVal('ID_BPMN'),
-                    Activite_du_logigramme: getVal('Activite_du_logigramme'),
-                    Composante_concernee: getVal('Composante_concernee'),
-                    Titulaire_de_la_tache: getVal('Titulaire_de_la_tache'),
-                    Periodicite_de_la_tache: getVal('Periodicite_de_la_tache'),
-                    Suppleant: getVal('Suppleant'),
-                    Titulaire_charge_du_controle_de_1er_niveau: getVal('Titulaire_charge_du_controle_de_1er_niveau'),
-                    Titulaire_charge_du_controle_hierarchique: getVal('Titulaire_charge_du_controle_hierarchique'),
-                    Application_outil_utilise_pour_realiser_la_tache: getVal('Application_outil_utilise_pour_realiser_la_tache'),
-                    Documentation_Fiches_de_procedure_associees: getVal('Documentation_Fiches_de_procedure_associees'),
-                    Mode_operatoire_SIFAC: getVal('Mode_operatoire_SIFAC'),
-                    Textes_reglementation: getVal('Textes_reglementation'),
-                    Observations: getVal('Observations')
-                };
+                const recordObj = { id: r.id };
+                columns.forEach(col => recordObj[col] = getVal(col));
+                return recordObj;
             });
         });
 
         grist.onRecord((record) => {
-            // Si le panneau est ouvert, on s'assure qu'on ne change pas l'activité 
-            // si l'utilisateur clique sur une ligne Grist au lieu du logigramme.
-            // On met juste à jour les données (en respectant le focus)
+            // Ne mettre à jour que si la ligne correspond à l'activité actuellement ouverte
             if (document.getElementById('side-panel').classList.contains('open') && record.id === currentRecordId) {
                 const match = gristRecords.find(r => r.id === record.id);
                 if (match) {
