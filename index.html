@@ -107,12 +107,13 @@
             white-space: nowrap;
             overflow-x: auto;
         }
-		/* Rend le texte d'exemple plus petit et grisé */
-.field-input::placeholder {
-    color: #888;           /* Couleur grisée */
-    font-size: 0.85em;     /* Police plus petite (85% de la taille normale du champ) */
-    font-style: italic;    /* Optionnel : met l'exemple en italique pour bien le différencier de la saisie */
-}
+        
+        /* Rend le texte d'exemple plus petit et grisé */
+        .field-input::placeholder {
+            color: #888;           /* Couleur grisée */
+            font-size: 0.85em;     /* Police plus petite (85% de la taille normale du champ) */
+            font-style: italic;    /* Optionnel : met l'exemple en italique pour bien le différencier de la saisie */
+        }
     </style>
 </head>
 <body>
@@ -711,12 +712,12 @@
             <div id="context-block">
                 <div class="activity-title" id="val-activite">Chargement...</div>
                 <div class="breadcrumb">
-					<span id="val-processus">-</span> 
-					<span class="separator" style="margin: 0 10px; color: #ccc;">|</span> 
-					<span id="val-composante">-</span> 
-					<span class="separator" style="margin: 0 10px; color: #ccc;">|</span> 
-					<span id="val-sous-service">-</span>
-				</div>
+                    <span id="val-processus">-</span> 
+                    <span class="separator" style="margin: 0 10px; color: #ccc;">|</span> 
+                    <span id="val-composante">-</span> 
+                    <span class="separator" style="margin: 0 10px; color: #ccc;">|</span> 
+                    <span id="val-sous-service">-</span>
+                </div>
                 <div>
                     <span class="field-label" style="margin-top: 0;">Description de l'activité</span>
                     <textarea class="field-input" data-grist-col="Description_activite" style="min-height: 60px;"></textarea>
@@ -765,16 +766,7 @@
             <!-- BLOC 2 : EXÉCUTION ET DOCUMENTATION -->
             <div class="section-title">Exécution et Documentation</div>
 
-            <div class="col-3">
-                <span class="field-label">Périodicité de la tâche</span>
-                <input type="text" class="field-input" data-grist-col="Periodicite_de_la_tache">
-            </div>
-            <div class="col-3">
-                <span class="field-label">Traçabilité de la tâche</span>
-                <input type="text" class="field-input" data-grist-col="Tracabilite_de_la_tache">
-            </div>
-            
-             <div class="col-6">
+            <div class="col-6">
                 <span class="field-label">Application / Outil utilisé pour réaliser la tâche</span>
                 <input type="text" class="field-input" data-grist-col="Application_outil_utilise_pour_realiser_la_tache" placeholder="[ex. : SIFAC- transaction ME21N]">
             </div>
@@ -912,8 +904,8 @@
             match.Sous_Processus = bpmnData.sousProcessus || match.Sous_Processus;
             match.Sous_Service = bpmnData.sousService || match.Sous_Service;
 
+            // Mise à jour du fil d'Ariane corrigée
             document.getElementById('val-processus').textContent = match.Processus || "-";
-            document.getElementById('val-sous-processus').textContent = match.Sous_Processus || "-";
             document.getElementById('val-sous-service').textContent = match.Sous_Service || "-";
             document.getElementById('val-activite').textContent = match.Activite_du_logigramme || "Activité non nommée";
             document.getElementById('val-composante').textContent = match.Composante_concernee || "-";
