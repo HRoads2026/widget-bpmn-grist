@@ -54,10 +54,9 @@
         }
         .section-title:first-of-type { margin-top: 0; }
 
-        /* Style pour le bloc d'identité du processus */
         #context-block {
             grid-column: 1 / -1;
-            background: #f0f7f4; /* Fond vert très pâle */
+            background: #f0f7f4;
             border-left: 4px solid #16b378;
             padding: 12px 16px;
             margin-bottom: 10px;
@@ -66,11 +65,9 @@
         .breadcrumb { font-size: 12px; color: #666; margin-bottom: 6px; }
         .breadcrumb span { font-weight: 600; color: #444; }
         .breadcrumb .separator { margin: 0 5px; color: #aaa; }
-        
         .activity-title { font-size: 16px; font-weight: bold; color: #16b378; line-height: 1.3; }
         .activity-composante { font-size: 12px; color: #555; margin-top: 4px; font-style: italic; }
 
-        /* Champs de saisie */
         .field-label { font-size: 11px; font-weight: 600; color: #555; margin-top: 8px; display: block; }
         .field-input { 
             width: 100%; margin-top: 2px; margin-bottom: 2px; padding: 7px 10px; 
@@ -87,8 +84,6 @@
         .col-6 { grid-column: span 6; } 
         
         textarea.field-input { resize: vertical; min-height: 50px; }
-        
-        /* Style spécifique pour les placeholders longs (documentation) */
         .doc-area { min-height: 70px; }
 
         #save-indicator {
@@ -112,118 +107,9 @@
 </head>
 <body>
     
-    <div id="canvas"></div>
-    <div id="timestamp-bottom">🕒 Mise à jour : <strong id="file-date">Chargement...</strong></div>
-    
-    <div id="side-panel">
-        <div id="panel-header">
-            <h3 id="panel-title">Détails de la tâche</h3>
-            <div id="save-indicator"></div>
-            <button id="close-btn">&times;</button>
-        </div>
-
-        <div class="form-grid">
-            
-            <!-- BLOC 1 : ORGANISATION & PROCESSUS (Nouveau format) -->
-            <div class="section-title">Organisation & Processus</div>
-            
-            <div id="context-block">
-                <div class="breadcrumb">
-                    <span id="val-processus">-</span> <span class="separator">›</span> 
-                    <span id="val-sous-processus">-</span> <span class="separator">›</span> 
-                    <span id="val-sous-service">-</span>
-                </div>
-                <div class="activity-title" id="val-activite">Chargement...</div>
-                <div class="activity-composante">Composante : <span id="val-composante">-</span></div>
-            </div>
-
-            <div class="col-6" style="margin-top: 5px;">
-                <span class="field-label">Description de l'activité</span>
-                <textarea class="field-input" data-grist-col="Description_activite" style="min-height: 80px;"></textarea>
-            </div>
-
-            <!-- BLOC 2 : RESPONSABLES & CONTRÔLES -->
-            <div class="section-title">Responsables & Contrôles</div>
-
-            <div class="col-3">
-                <span class="field-label">Titulaire de la tâche</span>
-                <input type="text" class="field-input" data-grist-col="Titulaire_de_la_tache">
-            </div>
-            <div class="col-3">
-                <span class="field-label">Fonction du titulaire</span>
-                <input type="text" class="field-input" data-grist-col="Fonction_du_tituaire">
-            </div>
-            
-            <div class="col-3">
-                <span class="field-label">Suppléant</span>
-                <input type="text" class="field-input" data-grist-col="Suppleant">
-            </div>
-            <div class="col-3">
-                <span class="field-label">Fonction du suppléant</span>
-                <input type="text" class="field-input" data-grist-col="Fonction_du_suppleant">
-            </div>
-
-            <div class="col-3">
-                <span class="field-label">Contrôle 1er niveau</span>
-                <input type="text" class="field-input" data-grist-col="Titulaire_charge_du_controle_de_1er_niveau">
-            </div>
-            <div class="col-3">
-                <span class="field-label">Fonction (Ctrl 1er niv.)</span>
-                <input type="text" class="field-input" data-grist-col="Fonction_du_titulaire_charge_du_controle_de_1er_niveau">
-            </div>
-
-            <div class="col-3">
-                <span class="field-label">Contrôle hiérarchique</span>
-                <input type="text" class="field-input" data-grist-col="Titulaire_charge_du_controle_hierarchique">
-            </div>
-            <div class="col-3">
-                <span class="field-label">Fonction (Ctrl hiér.)</span>
-                <input type="text" class="field-input" data-grist-col="Fonction_du_titulaire_charge_du_controle_hierarchique">
-            </div>
-
-            <!-- BLOC 3 : EXÉCUTION & DOCUMENTATION -->
-            <div class="section-title">Exécution & Documentation</div>
-
-            <div class="col-3">
-                <span class="field-label">Périodicité de la tâche</span>
-                <input type="text" class="field-input" data-grist-col="Periodicite_de_la_tache" placeholder="ex. journalier, à réception de la demande d'achat de la composante">
-            </div>
-            <div class="col-3">
-                <span class="field-label">Traçabilité de la tâche</span>
-                <input type="text" class="field-input" data-grist-col="Tracabilite_de_la_tache" placeholder="ex. N° BC SIFAC">
-            </div>
-            
-            <div class="col-6">
-                <span class="field-label">Application / Outil utilisé</span>
-                <input type="text" class="field-input" data-grist-col="Application_outil_utilise_pour_realiser_la_tache" placeholder="ex. : SIFAC- transaction ME21N">
-            </div>
-            
-            <div class="col-6">
-                <span class="field-label">Documentation / Fiches de procédure associées</span>
-                <textarea class="field-input doc-area" data-grist-col="Documentation_Fiches_de_procedure_associees" placeholder="ex. Procédure Préconisation Achats 2023. Procédure mission v25/09/2025. Note relative à la justification d'une demande d'achat v14/03/2025. Procédure Frais de réception v17/07/2024. Note Notion immobilisation v15/012/2024. Procédure TA 2026. Fichier exel 2024 Code Nacres. Tableau Délégation des signatures. Liste des marchés à bons de commande sur Procédure intranet"></textarea>
-            </div>
-            
-            <div class="col-3">
-                <span class="field-label">Mode opératoire SIFAC</span>
-                <textarea class="field-input" data-grist-col="Mode_operatoire_SIFAC" style="min-height: 60px;" placeholder="ex. SIFAC-MOP-EngagementJuridiqueME21N-V5.pdf1_SIFAC-MOP-DEP-Insérer une pièce jointe.pdf"></textarea>
-            </div>
-            <div class="col-3">
-                <span class="field-label">Textes et Réglementation</span>
-                <textarea class="field-input" data-grist-col="Textes_reglementation" style="min-height: 60px;" placeholder="ex. Décret n° 2012-1246 du 7 novembre 2012 relatif à la gestion budgétaire et comptable publiqueDPG_Dépenses V2-décret N°2012-1246 GBCP.pdf. Recueil des Règles budgétaires des organismes_RRBOv3_arrete_26072019.pdf"></textarea>
-            </div>
-
-            <div class="col-6">
-                <span class="field-label">Observations</span>
-                <textarea class="field-input" data-grist-col="Observations"></textarea>
-            </div>
-
-        </div>
-
-        <div id="metadata-footer">Métadonnées et IDS : Chargement...</div>
-    </div>
-
-    <script>
-        const bpmnXML = `<?xml version="1.0" encoding="UTF-8"?>
+    <!-- Balise sécurisée pour injecter le XML sans risquer de casser le JavaScript avec des backticks ou ${} -->
+    <script type="text/xml" id="bpmn-xml-data">
+<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1ni2027" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.34.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.7.0">
   <bpmn:collaboration id="Collaboration_1ky2kzs">
     <bpmn:participant id="Participant_0slv732" name="PROCESSUS TEST" processRef="Process_0wf4ks9" />
@@ -797,7 +683,119 @@
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>
-`;
+
+    </script>
+
+    <div id="canvas"></div>
+    <div id="timestamp-bottom">🕒 Mise à jour : <strong id="file-date">Chargement...</strong></div>
+    
+    <div id="side-panel">
+        <div id="panel-header">
+            <h3 id="panel-title">Détails de la tâche</h3>
+            <div id="save-indicator"></div>
+            <button id="close-btn">&times;</button>
+        </div>
+
+        <div class="form-grid">
+            
+            <div class="section-title">Organisation & Processus</div>
+            
+            <div id="context-block">
+                <div class="breadcrumb">
+                    <span id="val-processus">-</span> <span class="separator">›</span> 
+                    <span id="val-sous-processus">-</span> <span class="separator">›</span> 
+                    <span id="val-sous-service">-</span>
+                </div>
+                <div class="activity-title" id="val-activite">Chargement...</div>
+                <div class="activity-composante">Composante : <span id="val-composante">-</span></div>
+            </div>
+
+            <div class="col-6" style="margin-top: 5px;">
+                <span class="field-label">Description de l'activité</span>
+                <textarea class="field-input" data-grist-col="Description_activite" style="min-height: 80px;"></textarea>
+            </div>
+
+            <div class="section-title">Responsables & Contrôles</div>
+
+            <div class="col-3">
+                <span class="field-label">Titulaire de la tâche</span>
+                <input type="text" class="field-input" data-grist-col="Titulaire_de_la_tache">
+            </div>
+            <div class="col-3">
+                <span class="field-label">Fonction du titulaire</span>
+                <input type="text" class="field-input" data-grist-col="Fonction_du_tituaire">
+            </div>
+            
+            <div class="col-3">
+                <span class="field-label">Suppléant</span>
+                <input type="text" class="field-input" data-grist-col="Suppleant">
+            </div>
+            <div class="col-3">
+                <span class="field-label">Fonction du suppléant</span>
+                <input type="text" class="field-input" data-grist-col="Fonction_du_suppleant">
+            </div>
+
+            <div class="col-3">
+                <span class="field-label">Contrôle 1er niveau</span>
+                <input type="text" class="field-input" data-grist-col="Titulaire_charge_du_controle_de_1er_niveau">
+            </div>
+            <div class="col-3">
+                <span class="field-label">Fonction (Ctrl 1er niv.)</span>
+                <input type="text" class="field-input" data-grist-col="Fonction_du_titulaire_charge_du_controle_de_1er_niveau">
+            </div>
+
+            <div class="col-3">
+                <span class="field-label">Contrôle hiérarchique</span>
+                <input type="text" class="field-input" data-grist-col="Titulaire_charge_du_controle_hierarchique">
+            </div>
+            <div class="col-3">
+                <span class="field-label">Fonction (Ctrl hiér.)</span>
+                <input type="text" class="field-input" data-grist-col="Fonction_du_titulaire_charge_du_controle_hierarchique">
+            </div>
+
+            <div class="section-title">Exécution & Documentation</div>
+
+            <div class="col-3">
+                <span class="field-label">Périodicité de la tâche</span>
+                <input type="text" class="field-input" data-grist-col="Periodicite_de_la_tache" placeholder="ex. journalier, à réception de la demande d'achat">
+            </div>
+            <div class="col-3">
+                <span class="field-label">Traçabilité de la tâche</span>
+                <input type="text" class="field-input" data-grist-col="Tracabilite_de_la_tache" placeholder="ex. N° BC SIFAC">
+            </div>
+            
+            <div class="col-6">
+                <span class="field-label">Application / Outil utilisé</span>
+                <input type="text" class="field-input" data-grist-col="Application_outil_utilise_pour_realiser_la_tache" placeholder="ex. : SIFAC- transaction ME21N">
+            </div>
+            
+            <div class="col-6">
+                <span class="field-label">Documentation / Fiches de procédure associées</span>
+                <textarea class="field-input doc-area" data-grist-col="Documentation_Fiches_de_procedure_associees" placeholder="ex. Procédure Préconisation Achats 2023. Procédure mission v25/09/2025..."></textarea>
+            </div>
+            
+            <div class="col-3">
+                <span class="field-label">Mode opératoire SIFAC</span>
+                <textarea class="field-input" data-grist-col="Mode_operatoire_SIFAC" style="min-height: 60px;" placeholder="ex. SIFAC-MOP-EngagementJuridiqueME21N-V5.pdf"></textarea>
+            </div>
+            <div class="col-3">
+                <span class="field-label">Textes et Réglementation</span>
+                <textarea class="field-input" data-grist-col="Textes_reglementation" style="min-height: 60px;" placeholder="ex. Décret n° 2012-1246 du 7 novembre 2012..."></textarea>
+            </div>
+
+            <div class="col-6">
+                <span class="field-label">Observations</span>
+                <textarea class="field-input" data-grist-col="Observations"></textarea>
+            </div>
+
+        </div>
+
+        <div id="metadata-footer">Métadonnées et IDS : Chargement...</div>
+    </div>
+
+    <script>
+        // Récupération sécurisée du XML
+        const bpmnXML = document.getElementById('bpmn-xml-data').textContent;
         const viewer = new BpmnJS({ container: '#canvas' });
         let gristRecords = [];
         let currentMappings = {};
@@ -818,26 +816,30 @@
             const lanes = xmlDoc.getElementsByTagNameNS(bpmnNS, "lane");
             let elementLane = null;
             
+            // Parcours de toutes les lanes pour trouver la plus profonde (la plus spécifique)
+            // Dans BPMN, une lane parente liste les flowNodeRef de ses enfants. 
+            // Il faut donc continuer à chercher pour écraser la lane parente par la lane enfant.
             for (let lane of lanes) {
                 const refs = lane.getElementsByTagNameNS(bpmnNS, "flowNodeRef");
                 for (let ref of refs) {
                     if (ref.textContent === elementId) {
-                        elementLane = lane;
-                        break;
+                        elementLane = lane; 
                     }
                 }
-                if (elementLane) break;
             }
 
             if (elementLane) {
                 const parent = elementLane.parentNode;
+                // Si la lane est dans un childLaneSet, c'est un Sous-Service
                 if (parent && parent.localName === "childLaneSet") {
                     sousService = elementLane.getAttribute("name") || "";
+                    // Le parent du childLaneSet est la lane de niveau 1 (Service/Sous-Processus)
                     const parentLane = parent.parentNode;
                     if (parentLane && parentLane.localName === "lane") {
                         sousProcessus = parentLane.getAttribute("name") || "";
                     }
                 } else {
+                    // Sinon, c'est une lane de niveau 1 (Service/Sous-Processus)
                     sousProcessus = elementLane.getAttribute("name") || "";
                 }
             }
@@ -891,20 +893,17 @@
         function updateFormFields(match, elementId) {
             document.getElementById('panel-title').textContent = match.Activite_du_logigramme || "Détails de la tâche";
             
-            // Injection des données lues depuis le BPMN dans le bloc texte
             const bpmnData = getProcessData(elementId);
             match.Processus = bpmnData.process || match.Processus;
             match.Sous_Processus = bpmnData.sousProcessus || match.Sous_Processus;
             match.Sous_Service = bpmnData.sousService || match.Sous_Service;
 
-            // Mise à jour des textes d'entête (fil d'Ariane)
             document.getElementById('val-processus').textContent = match.Processus || "-";
             document.getElementById('val-sous-processus').textContent = match.Sous_Processus || "-";
             document.getElementById('val-sous-service').textContent = match.Sous_Service || "-";
             document.getElementById('val-activite').textContent = match.Activite_du_logigramme || "Activité non nommée";
             document.getElementById('val-composante').textContent = match.Composante_concernee || "-";
 
-            // Mise à jour des champs de saisie
             const inputs = document.querySelectorAll('.field-input');
             inputs.forEach(input => {
                 if (document.activeElement === input) return; 
@@ -914,7 +913,6 @@
                 }
             });
 
-            // Métadonnées
             const footer = document.getElementById('metadata-footer');
             const idBpmn = match.ID_BPMN || '-';
             const idPrim = match.ID_Primaire || '-';
