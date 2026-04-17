@@ -41,7 +41,7 @@
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             gap: 0 16px; 
-            padding: 8px 20px 20px 20px; /* Padding réduit en haut pour coller sous le trait vert */
+            padding: 8px 20px 20px 20px;
             overflow-y: auto; flex-grow: 1;
         }
 
@@ -54,27 +54,21 @@
         }
         .section-title:first-of-type { margin-top: 0; }
 
-        /* Bloc d'en-tête simplifié et compact */
         #context-block {
             grid-column: 1 / -1;
             background: #f0f7f4;
             border-left: 4px solid #16b378;
-            padding: 6px 16px; /* Padding réduit */
-            margin-bottom: 5px; /* Marge réduite */
+            padding: 6px 16px;
+            margin-bottom: 5px;
             border-radius: 0 4px 4px 0;
         }
         
-        /* Fil d'Ariane classique */
         .breadcrumb { 
-            font-size: 11px; /* Police plus petite */
-            color: #888; 
-            margin-bottom: 6px; /* Interligne réduit sous le fil d'Ariane */
-            white-space: nowrap; 
-            overflow-x: auto; 
-            padding-bottom: 2px;
-            line-height: 1.3; /* Interligne compact */
+            font-size: 11px; color: #888; 
+            margin-bottom: 6px; white-space: nowrap; 
+            overflow-x: auto; padding-bottom: 2px; line-height: 1.3;
         }
-        .breadcrumb span { font-weight: normal; color: #555; } /* Poids normal pour un aspect classique */
+        .breadcrumb span { font-weight: normal; color: #555; }
         .breadcrumb .separator { margin: 0 4px; color: #aaa; }
 
         .field-label { font-size: 11px; font-weight: 600; color: #555; margin-top: 8px; display: block; }
@@ -112,11 +106,19 @@
             overflow-x: auto;
         }
         
-        /* Rend le texte d'exemple plus petit et grisé */
         .field-input::placeholder {
-            color: #888;           /* Couleur grisée */
-            font-size: 0.85em;     /* Police plus petite (85% de la taille normale du champ) */
-            font-style: italic;    /* Optionnel : met l'exemple en italique pour bien le différencier de la saisie */
+            color: #888; font-size: 0.85em; font-style: italic;
+        }
+
+        /* ================================================== */
+        /* NOUVEAU : Effet lumineux vert pour l'activité      */
+        /* ================================================== */
+        .active-glow:not(.djs-connection) .djs-visual > :nth-child(1) {
+            stroke: #00ff00 !important;           /* Bordure verte vive */
+            stroke-width: 3px !important;         /* Épaisseur de la bordure */
+            fill: rgba(0, 255, 0, 0.08) !important; /* Léger fond vert très transparent */
+            filter: drop-shadow(0 0 8px rgba(0, 255, 0, 0.9)) drop-shadow(0 0 20px rgba(0, 255, 0, 0.5)); /* Effet de lueur néon */
+            transition: stroke 0.3s ease, fill 0.3s ease, filter 0.3s ease; /* Animation douce à l'apparition */
         }
     </style>
 </head>
@@ -712,7 +714,6 @@
 
         <div class="form-grid">
             
-            <!-- EN-TÊTE : Fil d'Ariane, Description -->
             <div id="context-block">
                 <div class="breadcrumb">
                     <span id="val-processus">-</span> 
@@ -727,7 +728,6 @@
                 </div>
             </div>
 
-            <!-- BLOC 1 : RESPONSABLES ET CONTRÔLES -->
             <div class="section-title">Responsables et Contrôles</div>
 
             <div class="col-3">
@@ -766,7 +766,6 @@
                 <input type="text" class="field-input" data-grist-col="Fonction_du_titulaire_charge_du_controle_hierarchique">
             </div>
 
-            <!-- BLOC 2 : EXÉCUTION ET DOCUMENTATION -->
             <div class="section-title">Exécution et Documentation</div>
 
             <div class="col-6">
@@ -786,17 +785,17 @@
 
             <div class="col-6">
                 <span class="field-label">Documentation / Fiches de procédure associées</span>
-                <textarea class="field-input" data-grist-col="Documentation_Fiches_de_procedure_associees" style="min-height: 70px;" placeholder="ex. Procédure Préconisation Achats 2023. Procédure mission v25/09/2025. Note relative à la justification d'une demande d'achat v14/03/2025. Procédure Frais de réception v17/07/2024. Note Notion immobilisation v15/012/2024. Procédure TA 2026. Fichier exel 2024 Code Nacres. Tableau Délégation des signatures. Liste des marchés à bons de commande sur Procédure intranet"></textarea>
+                <textarea class="field-input" data-grist-col="Documentation_Fiches_de_procedure_associees" style="min-height: 70px;" placeholder="ex. Procédure Préconisation Achats 2023..."></textarea>
             </div>
             
             <div class="col-3">
                 <span class="field-label">Mode opératoire SIFCA</span>
-                <textarea class="field-input" data-grist-col="Mode_operatoire_SIFAC" style="min-height: 60px;" placeholder="ex. SIFAC-MOP-EngagementJuridiqueME21N-V5.pdf1_SIFAC-MOP-DEP-Insérer une pièce jointe.pdf"></textarea>
+                <textarea class="field-input" data-grist-col="Mode_operatoire_SIFAC" style="min-height: 60px;" placeholder="ex. SIFAC-MOP-EngagementJuridiqueME21N-V5.pdf1..."></textarea>
             </div>
             
             <div class="col-3">
                 <span class="field-label">Textes et Réglementation</span>
-                <textarea class="field-input" data-grist-col="Textes_reglementation" style="min-height: 60px;" placeholder="ex. Décret n° 2012-1246 du 7 novembre 2012 relatif à la gestion budgétaire et comptable publiqueDPG_Dépenses V2-décret N°2012-1246 GBCP.pdf. Recueil des Règles budgétaires des organismes_RRBOv3_arrete_26072019.pdf"></textarea>
+                <textarea class="field-input" data-grist-col="Textes_reglementation" style="min-height: 60px;" placeholder="ex. Décret n° 2012-1246 du 7 novembre 2012..."></textarea>
             </div>
 
             <div class="col-6">
@@ -815,6 +814,7 @@
         let gristRecords = [];
         let currentMappings = {};
         let currentRecordId = null;
+        let currentActiveElementId = null; // NOUVEAU : Pour mémoriser l'élément avec le glow
         
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(bpmnXML, "text/xml");
@@ -907,7 +907,6 @@
             match.Sous_Processus = bpmnData.sousProcessus || match.Sous_Processus;
             match.Sous_Service = bpmnData.sousService || match.Sous_Service;
 
-            // Mise à jour du fil d'Ariane uniquement (le titre a été retiré du HTML)
             document.getElementById('val-processus').textContent = match.Processus || "-";
             document.getElementById('val-sous-service').textContent = match.Sous_Service || "-";
             document.getElementById('val-composante').textContent = match.Composante_concernee || "-";
@@ -937,12 +936,23 @@
                 viewer.on('element.click', (e) => {
                     const match = gristRecords.find(r => r.ID_BPMN === e.element.id);
                     
+                    // NOUVEAU : Retirer le surlignage de l'ancien élément
+                    if (currentActiveElementId) {
+                        viewer.get('canvas').removeMarker(currentActiveElementId, 'active-glow');
+                    }
+
                     if (match) {
+                        // NOUVEAU : Appliquer le surlignage sur le nouvel élément
+                        currentActiveElementId = e.element.id;
+                        viewer.get('canvas').addMarker(currentActiveElementId, 'active-glow');
+
                         currentRecordId = match.id;
                         updateFormFields(match, e.element.id);
                         document.getElementById('side-panel').classList.add('open');
                         grist.setSelectedRows([match.id]);
                     } else {
+                        // NOUVEAU : Si on clique dans le vide, on efface le surlignage
+                        currentActiveElementId = null;
                         document.getElementById('side-panel').classList.remove('open');
                         currentRecordId = null;
                     }
@@ -953,6 +963,12 @@
         document.getElementById('close-btn').onclick = function() {
             document.getElementById('side-panel').classList.remove('open');
             currentRecordId = null;
+            
+            // NOUVEAU : Retirer le surlignage quand on ferme le panneau
+            if (currentActiveElementId) {
+                viewer.get('canvas').removeMarker(currentActiveElementId, 'active-glow');
+                currentActiveElementId = null;
+            }
         };
 
         grist.ready({ requiredAccess: 'full', allowSelectBy: true });
