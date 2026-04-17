@@ -107,6 +107,12 @@
             white-space: nowrap;
             overflow-x: auto;
         }
+		/* Rend le texte d'exemple plus petit et grisé */
+.field-input::placeholder {
+    color: #888;           /* Couleur grisée */
+    font-size: 0.85em;     /* Police plus petite (85% de la taille normale du champ) */
+    font-style: italic;    /* Optionnel : met l'exemple en italique pour bien le différencier de la saisie */
+}
     </style>
 </head>
 <body>
@@ -705,12 +711,12 @@
             <div id="context-block">
                 <div class="activity-title" id="val-activite">Chargement...</div>
                 <div class="breadcrumb">
-                    <span id="val-processus">-</span> <span class="separator">›</span> 
-                    <span id="val-sous-processus">-</span> <span class="separator">›</span> 
-                    <span id="val-sous-service">-</span>
-                    <span class="separator" style="margin: 0 10px; color: #ccc;">|</span>
-                    Composante : <span id="val-composante" style="font-style: italic;">-</span>
-                </div>
+					<span id="val-processus">-</span> 
+					<span class="separator" style="margin: 0 10px; color: #ccc;">|</span> 
+					<span id="val-composante">-</span> 
+					<span class="separator" style="margin: 0 10px; color: #ccc;">|</span> 
+					<span id="val-sous-service">-</span>
+				</div>
                 <div>
                     <span class="field-label" style="margin-top: 0;">Description de l'activité</span>
                     <textarea class="field-input" data-grist-col="Description_activite" style="min-height: 60px;"></textarea>
@@ -768,23 +774,34 @@
                 <input type="text" class="field-input" data-grist-col="Tracabilite_de_la_tache">
             </div>
             
-            <div class="col-6">
-                <span class="field-label">Application / Outil utilisé</span>
-                <input type="text" class="field-input" data-grist-col="Application_outil_utilise_pour_realiser_la_tache">
+             <div class="col-6">
+                <span class="field-label">Application / Outil utilisé pour réaliser la tâche</span>
+                <input type="text" class="field-input" data-grist-col="Application_outil_utilise_pour_realiser_la_tache" placeholder="[ex. : SIFAC- transaction ME21N]">
             </div>
             
+            <div class="col-3">
+                <span class="field-label">Périodicité de la tâche</span>
+                <input type="text" class="field-input" data-grist-col="Periodicite_de_la_tache" placeholder="[ex. journalier, à réception de la demande d'achat de la composante]">
+            </div>
+
+            <div class="col-3">
+                <span class="field-label">Traçabilité de la tâche</span>
+                <input type="text" class="field-input" data-grist-col="Tracabilite_de_la_tache" placeholder="[ex. N° BC SIFAC]">
+            </div>
+
             <div class="col-6">
                 <span class="field-label">Documentation / Fiches de procédure associées</span>
-                <textarea class="field-input" data-grist-col="Documentation_Fiches_de_procedure_associees" style="min-height: 70px;"></textarea>
+                <textarea class="field-input" data-grist-col="Documentation_Fiches_de_procedure_associees" style="min-height: 70px;" placeholder="[ex. Procédure Préconisation Achats 2023. Procédure mission v25/09/2025. Note relative à la justification d'une demande d'achat v14/03/2025. Procédure Frais de réception v17/07/2024. Note Notion immobilisation v15/012/2024. Procédure TA 2026. Fichier exel 2024 Code Nacres. Tableau Délégation des signatures. Liste des marchés à bons de commande sur Procédure intranet]"></textarea>
             </div>
             
             <div class="col-3">
-                <span class="field-label">Mode opératoire SIFAC</span>
-                <textarea class="field-input" data-grist-col="Mode_operatoire_SIFAC" style="min-height: 60px;"></textarea>
+                <span class="field-label">Mode opératoire SIFCA</span>
+                <textarea class="field-input" data-grist-col="Mode_operatoire_SIFAC" style="min-height: 60px;" placeholder="[ex. SIFAC-MOP-EngagementJuridiqueME21N-V5.pdf1_SIFAC-MOP-DEP-Insérer une pièce jointe.pdf]"></textarea>
             </div>
+            
             <div class="col-3">
                 <span class="field-label">Textes et Réglementation</span>
-                <textarea class="field-input" data-grist-col="Textes_reglementation" style="min-height: 60px;"></textarea>
+                <textarea class="field-input" data-grist-col="Textes_reglementation" style="min-height: 60px;" placeholder="[ex. Décret n° 2012-1246 du 7 novembre 2012 relatif à la gestion budgétaire et comptable publiqueDPG_Dépenses V2-décret N°2012-1246 GBCP.pdf. Recueil des Règles budgétaires des organismes_RRBOv3_arrete_26072019.pdf]"></textarea>
             </div>
 
             <div class="col-6">
