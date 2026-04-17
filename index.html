@@ -41,7 +41,7 @@
             display: grid;
             grid-template-columns: repeat(6, 1fr);
             gap: 0 16px; 
-            padding: 15px 20px 20px 20px;
+            padding: 8px 20px 20px 20px; /* Padding réduit en haut pour coller sous le trait vert */
             overflow-y: auto; flex-grow: 1;
         }
 
@@ -54,24 +54,28 @@
         }
         .section-title:first-of-type { margin-top: 0; }
 
-        /* Nouveau bloc d'en-tête simplifié */
+        /* Bloc d'en-tête simplifié et compact */
         #context-block {
             grid-column: 1 / -1;
             background: #f0f7f4;
             border-left: 4px solid #16b378;
-            padding: 12px 16px;
-            margin-bottom: 10px;
+            padding: 6px 16px; /* Padding réduit */
+            margin-bottom: 5px; /* Marge réduite */
             border-radius: 0 4px 4px 0;
         }
-        .activity-title { font-size: 18px; font-weight: bold; color: #16b378; line-height: 1.2; margin-bottom: 6px; }
         
-        /* Fil d'Ariane sur une seule ligne */
+        /* Fil d'Ariane classique */
         .breadcrumb { 
-            font-size: 12px; color: #666; margin-bottom: 12px; 
-            white-space: nowrap; overflow-x: auto; padding-bottom: 4px;
+            font-size: 11px; /* Police plus petite */
+            color: #888; 
+            margin-bottom: 6px; /* Interligne réduit sous le fil d'Ariane */
+            white-space: nowrap; 
+            overflow-x: auto; 
+            padding-bottom: 2px;
+            line-height: 1.3; /* Interligne compact */
         }
-        .breadcrumb span { font-weight: 600; color: #444; }
-        .breadcrumb .separator { margin: 0 5px; color: #aaa; }
+        .breadcrumb span { font-weight: normal; color: #555; } /* Poids normal pour un aspect classique */
+        .breadcrumb .separator { margin: 0 4px; color: #aaa; }
 
         .field-label { font-size: 11px; font-weight: 600; color: #555; margin-top: 8px; display: block; }
         .field-input { 
@@ -708,14 +712,13 @@
 
         <div class="form-grid">
             
-            <!-- EN-TÊTE : Activité, Fil d'Ariane, Description -->
+            <!-- EN-TÊTE : Fil d'Ariane, Description -->
             <div id="context-block">
-                <div class="activity-title" id="val-activite">Chargement...</div>
                 <div class="breadcrumb">
                     <span id="val-processus">-</span> 
-                    <span class="separator" style="margin: 0 10px; color: #ccc;">|</span> 
+                    <span class="separator">/</span> 
                     <span id="val-composante">-</span> 
-                    <span class="separator" style="margin: 0 10px; color: #ccc;">|</span> 
+                    <span class="separator">/</span> 
                     <span id="val-sous-service">-</span>
                 </div>
                 <div>
@@ -768,32 +771,32 @@
 
             <div class="col-6">
                 <span class="field-label">Application / Outil utilisé pour réaliser la tâche</span>
-                <input type="text" class="field-input" data-grist-col="Application_outil_utilise_pour_realiser_la_tache" placeholder="[ex. : SIFAC- transaction ME21N]">
+                <input type="text" class="field-input" data-grist-col="Application_outil_utilise_pour_realiser_la_tache" placeholder="ex. : SIFAC- transaction ME21N">
             </div>
             
             <div class="col-3">
                 <span class="field-label">Périodicité de la tâche</span>
-                <input type="text" class="field-input" data-grist-col="Periodicite_de_la_tache" placeholder="[ex. journalier, à réception de la demande d'achat de la composante]">
+                <input type="text" class="field-input" data-grist-col="Periodicite_de_la_tache" placeholder="ex. journalier, à réception de la demande d'achat de la composante">
             </div>
 
             <div class="col-3">
                 <span class="field-label">Traçabilité de la tâche</span>
-                <input type="text" class="field-input" data-grist-col="Tracabilite_de_la_tache" placeholder="[ex. N° BC SIFAC]">
+                <input type="text" class="field-input" data-grist-col="Tracabilite_de_la_tache" placeholder="ex. N° BC SIFAC">
             </div>
 
             <div class="col-6">
                 <span class="field-label">Documentation / Fiches de procédure associées</span>
-                <textarea class="field-input" data-grist-col="Documentation_Fiches_de_procedure_associees" style="min-height: 70px;" placeholder="[ex. Procédure Préconisation Achats 2023. Procédure mission v25/09/2025. Note relative à la justification d'une demande d'achat v14/03/2025. Procédure Frais de réception v17/07/2024. Note Notion immobilisation v15/012/2024. Procédure TA 2026. Fichier exel 2024 Code Nacres. Tableau Délégation des signatures. Liste des marchés à bons de commande sur Procédure intranet]"></textarea>
+                <textarea class="field-input" data-grist-col="Documentation_Fiches_de_procedure_associees" style="min-height: 70px;" placeholder="ex. Procédure Préconisation Achats 2023. Procédure mission v25/09/2025. Note relative à la justification d'une demande d'achat v14/03/2025. Procédure Frais de réception v17/07/2024. Note Notion immobilisation v15/012/2024. Procédure TA 2026. Fichier exel 2024 Code Nacres. Tableau Délégation des signatures. Liste des marchés à bons de commande sur Procédure intranet"></textarea>
             </div>
             
             <div class="col-3">
                 <span class="field-label">Mode opératoire SIFCA</span>
-                <textarea class="field-input" data-grist-col="Mode_operatoire_SIFAC" style="min-height: 60px;" placeholder="[ex. SIFAC-MOP-EngagementJuridiqueME21N-V5.pdf1_SIFAC-MOP-DEP-Insérer une pièce jointe.pdf]"></textarea>
+                <textarea class="field-input" data-grist-col="Mode_operatoire_SIFAC" style="min-height: 60px;" placeholder="ex. SIFAC-MOP-EngagementJuridiqueME21N-V5.pdf1_SIFAC-MOP-DEP-Insérer une pièce jointe.pdf"></textarea>
             </div>
             
             <div class="col-3">
                 <span class="field-label">Textes et Réglementation</span>
-                <textarea class="field-input" data-grist-col="Textes_reglementation" style="min-height: 60px;" placeholder="[ex. Décret n° 2012-1246 du 7 novembre 2012 relatif à la gestion budgétaire et comptable publiqueDPG_Dépenses V2-décret N°2012-1246 GBCP.pdf. Recueil des Règles budgétaires des organismes_RRBOv3_arrete_26072019.pdf]"></textarea>
+                <textarea class="field-input" data-grist-col="Textes_reglementation" style="min-height: 60px;" placeholder="ex. Décret n° 2012-1246 du 7 novembre 2012 relatif à la gestion budgétaire et comptable publiqueDPG_Dépenses V2-décret N°2012-1246 GBCP.pdf. Recueil des Règles budgétaires des organismes_RRBOv3_arrete_26072019.pdf"></textarea>
             </div>
 
             <div class="col-6">
@@ -904,10 +907,9 @@
             match.Sous_Processus = bpmnData.sousProcessus || match.Sous_Processus;
             match.Sous_Service = bpmnData.sousService || match.Sous_Service;
 
-            // Mise à jour du fil d'Ariane corrigée
+            // Mise à jour du fil d'Ariane uniquement (le titre a été retiré du HTML)
             document.getElementById('val-processus').textContent = match.Processus || "-";
             document.getElementById('val-sous-service').textContent = match.Sous_Service || "-";
-            document.getElementById('val-activite').textContent = match.Activite_du_logigramme || "Activité non nommée";
             document.getElementById('val-composante').textContent = match.Composante_concernee || "-";
 
             const inputs = document.querySelectorAll('.field-input');
