@@ -54,6 +54,7 @@
         }
         .section-title:first-of-type { margin-top: 0; }
 
+        /* Nouveau bloc d'en-tête simplifié */
         #context-block {
             grid-column: 1 / -1;
             background: #f0f7f4;
@@ -62,11 +63,15 @@
             margin-bottom: 10px;
             border-radius: 0 4px 4px 0;
         }
-        .breadcrumb { font-size: 12px; color: #666; margin-bottom: 6px; }
+        .activity-title { font-size: 18px; font-weight: bold; color: #16b378; line-height: 1.2; margin-bottom: 6px; }
+        
+        /* Fil d'Ariane sur une seule ligne */
+        .breadcrumb { 
+            font-size: 12px; color: #666; margin-bottom: 12px; 
+            white-space: nowrap; overflow-x: auto; padding-bottom: 4px;
+        }
         .breadcrumb span { font-weight: 600; color: #444; }
         .breadcrumb .separator { margin: 0 5px; color: #aaa; }
-        .activity-title { font-size: 16px; font-weight: bold; color: #16b378; line-height: 1.3; }
-        .activity-composante { font-size: 12px; color: #555; margin-top: 4px; font-style: italic; }
 
         .field-label { font-size: 11px; font-weight: 600; color: #555; margin-top: 8px; display: block; }
         .field-input { 
@@ -84,7 +89,6 @@
         .col-6 { grid-column: span 6; } 
         
         textarea.field-input { resize: vertical; min-height: 50px; }
-        .doc-area { min-height: 70px; }
 
         #save-indicator {
             font-size: 10px; color: #999; padding-left: 15px; opacity: 0;
@@ -107,7 +111,6 @@
 </head>
 <body>
     
-    <!-- Balise sécurisée pour injecter le XML sans risquer de casser le JavaScript avec des backticks ou ${} -->
     <script type="text/xml" id="bpmn-xml-data">
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1ni2027" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.34.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.7.0">
@@ -698,24 +701,24 @@
 
         <div class="form-grid">
             
-            <div class="section-title">Organisation & Processus</div>
-            
+            <!-- EN-TÊTE : Activité, Fil d'Ariane, Description -->
             <div id="context-block">
+                <div class="activity-title" id="val-activite">Chargement...</div>
                 <div class="breadcrumb">
                     <span id="val-processus">-</span> <span class="separator">›</span> 
                     <span id="val-sous-processus">-</span> <span class="separator">›</span> 
                     <span id="val-sous-service">-</span>
+                    <span class="separator" style="margin: 0 10px; color: #ccc;">|</span>
+                    Composante : <span id="val-composante" style="font-style: italic;">-</span>
                 </div>
-                <div class="activity-title" id="val-activite">Chargement...</div>
-                <div class="activity-composante">Composante : <span id="val-composante">-</span></div>
+                <div>
+                    <span class="field-label" style="margin-top: 0;">Description de l'activité</span>
+                    <textarea class="field-input" data-grist-col="Description_activite" style="min-height: 60px;"></textarea>
+                </div>
             </div>
 
-            <div class="col-6" style="margin-top: 5px;">
-                <span class="field-label">Description de l'activité</span>
-                <textarea class="field-input" data-grist-col="Description_activite" style="min-height: 80px;"></textarea>
-            </div>
-
-            <div class="section-title">Responsables & Contrôles</div>
+            <!-- BLOC 1 : RESPONSABLES ET CONTRÔLES -->
+            <div class="section-title">Responsables et Contrôles</div>
 
             <div class="col-3">
                 <span class="field-label">Titulaire de la tâche</span>
@@ -753,34 +756,35 @@
                 <input type="text" class="field-input" data-grist-col="Fonction_du_titulaire_charge_du_controle_hierarchique">
             </div>
 
-            <div class="section-title">Exécution & Documentation</div>
+            <!-- BLOC 2 : EXÉCUTION ET DOCUMENTATION -->
+            <div class="section-title">Exécution et Documentation</div>
 
             <div class="col-3">
                 <span class="field-label">Périodicité de la tâche</span>
-                <input type="text" class="field-input" data-grist-col="Periodicite_de_la_tache" placeholder="ex. journalier, à réception de la demande d'achat">
+                <input type="text" class="field-input" data-grist-col="Periodicite_de_la_tache">
             </div>
             <div class="col-3">
                 <span class="field-label">Traçabilité de la tâche</span>
-                <input type="text" class="field-input" data-grist-col="Tracabilite_de_la_tache" placeholder="ex. N° BC SIFAC">
+                <input type="text" class="field-input" data-grist-col="Tracabilite_de_la_tache">
             </div>
             
             <div class="col-6">
                 <span class="field-label">Application / Outil utilisé</span>
-                <input type="text" class="field-input" data-grist-col="Application_outil_utilise_pour_realiser_la_tache" placeholder="ex. : SIFAC- transaction ME21N">
+                <input type="text" class="field-input" data-grist-col="Application_outil_utilise_pour_realiser_la_tache">
             </div>
             
             <div class="col-6">
                 <span class="field-label">Documentation / Fiches de procédure associées</span>
-                <textarea class="field-input doc-area" data-grist-col="Documentation_Fiches_de_procedure_associees" placeholder="ex. Procédure Préconisation Achats 2023. Procédure mission v25/09/2025..."></textarea>
+                <textarea class="field-input" data-grist-col="Documentation_Fiches_de_procedure_associees" style="min-height: 70px;"></textarea>
             </div>
             
             <div class="col-3">
                 <span class="field-label">Mode opératoire SIFAC</span>
-                <textarea class="field-input" data-grist-col="Mode_operatoire_SIFAC" style="min-height: 60px;" placeholder="ex. SIFAC-MOP-EngagementJuridiqueME21N-V5.pdf"></textarea>
+                <textarea class="field-input" data-grist-col="Mode_operatoire_SIFAC" style="min-height: 60px;"></textarea>
             </div>
             <div class="col-3">
                 <span class="field-label">Textes et Réglementation</span>
-                <textarea class="field-input" data-grist-col="Textes_reglementation" style="min-height: 60px;" placeholder="ex. Décret n° 2012-1246 du 7 novembre 2012..."></textarea>
+                <textarea class="field-input" data-grist-col="Textes_reglementation" style="min-height: 60px;"></textarea>
             </div>
 
             <div class="col-6">
@@ -794,7 +798,6 @@
     </div>
 
     <script>
-        // Récupération sécurisée du XML
         const bpmnXML = document.getElementById('bpmn-xml-data').textContent;
         const viewer = new BpmnJS({ container: '#canvas' });
         let gristRecords = [];
@@ -816,9 +819,6 @@
             const lanes = xmlDoc.getElementsByTagNameNS(bpmnNS, "lane");
             let elementLane = null;
             
-            // Parcours de toutes les lanes pour trouver la plus profonde (la plus spécifique)
-            // Dans BPMN, une lane parente liste les flowNodeRef de ses enfants. 
-            // Il faut donc continuer à chercher pour écraser la lane parente par la lane enfant.
             for (let lane of lanes) {
                 const refs = lane.getElementsByTagNameNS(bpmnNS, "flowNodeRef");
                 for (let ref of refs) {
@@ -830,16 +830,13 @@
 
             if (elementLane) {
                 const parent = elementLane.parentNode;
-                // Si la lane est dans un childLaneSet, c'est un Sous-Service
                 if (parent && parent.localName === "childLaneSet") {
                     sousService = elementLane.getAttribute("name") || "";
-                    // Le parent du childLaneSet est la lane de niveau 1 (Service/Sous-Processus)
                     const parentLane = parent.parentNode;
                     if (parentLane && parentLane.localName === "lane") {
                         sousProcessus = parentLane.getAttribute("name") || "";
                     }
                 } else {
-                    // Sinon, c'est une lane de niveau 1 (Service/Sous-Processus)
                     sousProcessus = elementLane.getAttribute("name") || "";
                 }
             }
