@@ -854,64 +854,91 @@
 
             if (!element || !element.businessObject) return { execPath, orgPath };
 
-            const elementRegistry = viewer.get('elementRegistry');
+            // Accès au modèle sémantique global (indépendant de la vue/plan actuel)
+            const definitions = viewer._definitions;
+            if (!definitions) return { execPath, orgPath };
 
             // 1. Processus (Participant)
-            const participant = elementRegistry.filter(e => e.type === 'bpmn:Participant')[0];
-            if (participant && participant.businessObject) {
-                execPath.push(participant.businessObject.name || "Processus");
+            const collaborations = definitions.rootElements.filter(e => e.$type === 'bpmn:Collaboration');
+            if (collaborations.length > 0 && collaborations[0].participants && collaborations[0].participants.length > 0) {
+                execPath.push(collaborations[0].participants[0].name || "Processus");
+            } else {
+                const processes = definitions.rootElements.filter(e => e.$type === 'bpmn:Process');
+                if (processes.length > 0) execPath.push(processes[0].name || "Processus");
             }
 
-            // 2. Hiérarchie des Sous-Processus (via l'arbre sémantique XML)
+            // 2. Hiérarchie des Sous-Processus (via l'arbre sémantique)
             let currentBo = element.businessObject;
             let subProcesses = [];
-            while (currentBo && currentBo.$parent) {
+            let safety = 0;
+            while (currentBo && currentBo.$parent && safety < 20) {
+                safety++;
                 if (currentBo.$parent.$type === 'bpmn:SubProcess') {
                     subProcesses.push(currentBo.$parent);
                 }
+                if (currentBo.$parent.$type === 'bpmn:Process') break;
                 currentBo = currentBo.$parent;
             }
             subProcesses.reverse().forEach(sp => {
                 execPath.push(sp.name || "Sous-processus");
             });
 
-            // 3. Hiérarchie des Lanes (Organisation)
-            // On cherche l'ID de l'élément racine (le sous-processus le plus haut, ou l'élément lui-même)
+            // 3. Cible pour la recherche du Service (Lane)
+            // On cherche le sous-processus le plus haut, ou l'élément lui-même
             let targetId = element.businessObject.id;
             if (subProcesses.length > 0) {
                 targetId = subProcesses[0].id; 
             }
 
-            // On scanne toutes les Lanes du diagramme principal pour trouver celle qui contient notre cible
-            const allLanes = elementRegistry.filter(e => e.type === 'bpmn:Lane');
-            let targetLaneBo = null;
-            for (const lane of allLanes) {
-                const flowNodeRefs = lane.businessObject.flowNodeRef;
-                if (flowNodeRefs) {
-                    for (const ref of flowNodeRefs) {
-                        if (ref.id === targetId) {
-                            targetLaneBo = lane.businessObject;
-                            break;
-                        }
-                    }
-                }
-                if (targetLaneBo) break;
-            }
-
-            // Si on a trouvé la Lane, on remonte l'arborescence parente via le code XML sémantique
-            if (targetLaneBo) {
-                let currentLaneBo = targetLaneBo;
-                let laneNames = [];
-                while (currentLaneBo && currentLaneBo.$type !== 'bpmn:Process') {
-                    if (currentLaneBo.$type === 'bpmn:Lane') {
-                        laneNames.push(currentLaneBo.name || "Service");
-                    }
-                    currentLaneBo = currentLaneBo.$parent;
-                }
-                laneNames.reverse().forEach(name => orgPath.push(name));
+            // 4. Organisation (Lanes) - Recherche dans l'arbre sémantique global
+            const processes = definitions.rootElements.filter(e => e.$type === 'bpmn:Process');
+            if (processes.length > 0) {
+                orgPath = getOrgPathFromProcess(processes[0], targetId);
             }
 
             return { execPath, orgPath };
+        }
+
+        function getOrgPathFromProcess(process, targetId) {
+            if (!process.laneSets) return [];
+            
+            function searchLane(lane) {
+                let foundInThisLane = false;
+                if (lane.flowNodeRef) {
+                    foundInThisLane = lane.flowNodeRef.some(ref => ref.id === targetId);
+                }
+                
+                let childPath = [];
+                if (lane.childLaneSet && lane.childLaneSet.lanes) {
+                    for (const childLane of lane.childLaneSet.lanes) {
+                        const res = searchLane(childLane);
+                        if (res.length > 0) {
+                            childPath = res;
+                            break; // Trouvé dans cette branche enfant
+                        }
+                    }
+                }
+                
+                // Si trouvé dans un enfant, on ajoute le nom de la Lane actuelle devant
+                if (childPath.length > 0) {
+                    return [lane.name || "Service", ...childPath];
+                } else if (foundInThisLane) {
+                    // Si trouvé dans cette Lane et aucun enfant, on termine le chemin
+                    return [lane.name || "Service"];
+                }
+                
+                return []; 
+            }
+
+            for (const ls of process.laneSets) {
+                if (ls.lanes) {
+                    for (const lane of ls.lanes) {
+                        const result = searchLane(lane);
+                        if (result.length > 0) return result;
+                    }
+                }
+            }
+            return [];
         }
 
         function buildBreadcrumb(pathArray, containerId) {
