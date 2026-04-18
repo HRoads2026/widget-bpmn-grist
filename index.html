@@ -753,15 +753,9 @@
             
             <div id="context-block">
                 <!-- Ligne 1 : Processus et Sous-Processus -->
-                <div id="breadcrumb-exec" class="breadcrumb">
-                    <span class="icon">⚙️</span>
-                    <!-- Rempli dynamiquement -->
-                </div>
+                <div id="breadcrumb-exec" class="breadcrumb"></div>
                 <!-- Ligne 2 : Organisation (Groupes / Services) -->
-                <div id="breadcrumb-org" class="breadcrumb">
-                    <span class="icon">🏢</span>
-                    <!-- Rempli dynamiquement -->
-                </div>
+                <div id="breadcrumb-org" class="breadcrumb"></div>
 
                 <div>
                     <span class="field-label" style="margin-top: 0;">Description de l'activité</span>
@@ -857,59 +851,88 @@
         let currentRecordId = null;
         let currentActiveElementId = null; 
         
-        // NOUVELLE LOGIQUE : Construction de deux chemins dynamiques (Exécution et Organisation)
+        // NOUVELLE LOGIQUE ROBUSTE : Utilisation du registre principal et de l'arbre logique
         function getProcessData(element) {
-            let execPath = []; // Processus et Sous-Processus
-            let orgPath = [];  // Groupes et Services
+            let execPath = [];
+            let orgPath = [];
 
             if (!element || !element.businessObject) return { execPath, orgPath };
 
-            // On remonte l'arbre depuis l'élément cliqué jusqu'à la racine
-            let current = element;
-            while (current) {
-                if (current.businessObject) {
-                    const type = current.businessObject.$type;
-                    const name = current.businessObject.name;
-                    
-                    if (type === 'bpmn:Participant' || type === 'bpmn:Process') {
-                        execPath.unshift(name || "Processus");
-                    } else if (type === 'bpmn:SubProcess') {
-                        execPath.unshift(name || "Sous-processus");
-                    } else if (type === 'bpmn:Lane') {
-                        orgPath.unshift(name || "Service");
-                    }
+            const elementRegistry = viewer.get('elementRegistry');
+
+            // 1. Trouver le nom du Processus racine (Toujours le Participant principal)
+            const participant = elementRegistry.filter(e => e.type === 'bpmn:Participant')[0];
+            if (participant && participant.businessObject) {
+                execPath.push(participant.businessObject.name || "Processus");
+            } else {
+                const process = elementRegistry.filter(e => e.type === 'bpmn:Process')[0];
+                if (process && process.businessObject) {
+                    execPath.push(process.businessObject.name || "Processus");
                 }
-                current = current.parent;
+            }
+
+            // 2. Trouver la hiérarchie complète des Sous-Processus via l'arbre logique XML
+            let currentBo = element.businessObject;
+            let subProcesses = [];
+            while (currentBo && currentBo.$parent) {
+                if (currentBo.$parent.$type === 'bpmn:SubProcess') {
+                    subProcesses.push(currentBo.$parent);
+                }
+                currentBo = currentBo.$parent;
+            }
+            // On les inverse pour les avoir du plus haut niveau au plus profond
+            subProcesses.reverse().forEach(sp => {
+                execPath.push(sp.name || "Sous-processus");
+            });
+
+            // 3. Trouver la hiérarchie des Lanes (Organisation)
+            // L'élément appartient à la même Lane que son sous-processus parent le plus élevé
+            let targetId = element.id;
+            if (subProcesses.length > 0) {
+                targetId = subProcesses[0].id; 
+            }
+
+            const targetElement = elementRegistry.get(targetId);
+            if (targetElement) {
+                let currentEl = targetElement;
+                let lanes = [];
+                while (currentEl && currentEl.parent) {
+                    if (currentEl.parent.type === 'bpmn:Lane') {
+                        lanes.push(currentEl.parent.businessObject.name || "Service");
+                    }
+                    currentEl = currentEl.parent;
+                }
+                // Inverser pour aller du Groupe au Sous-service
+                lanes.reverse().forEach(laneName => {
+                    orgPath.push(laneName);
+                });
             }
 
             return { execPath, orgPath };
         }
 
-        // Fonction pour générer le code HTML d'un fil d'Ariane avec le dernier niveau en vert
         function buildBreadcrumb(pathArray, containerId) {
             const container = document.getElementById(containerId);
-            // Conserver l'icône existante
-            const iconHtml = container.innerHTML.includes('icon') ? container.querySelector('.icon').outerHTML : '';
-            
-            if (pathArray.length === 0) {
-                container.innerHTML = iconHtml + '<span style="font-style:italic; color:#aaa;">Non défini</span>';
-                return;
-            }
+            if (!container) return;
 
-            let html = iconHtml;
-            pathArray.forEach((name, index) => {
-                // Si ce n'est pas le premier élément, on ajoute un séparateur
-                if (index > 0) {
-                    html += '<span class="separator">/</span>';
-                }
-                
-                // Le dernier élément reçoit la classe "active-level" (en vert)
-                if (index === pathArray.length - 1) {
-                    html += `<span class="active-level">${name}</span>`;
-                } else {
-                    html += `<span>${name}</span>`;
-                }
-            });
+            const icons = { 'breadcrumb-exec': '⚙️', 'breadcrumb-org': '🏢' };
+            let html = `<span class="icon">${icons[containerId] || ''}</span>`;
+
+            if (pathArray.length === 0) {
+                html += '<span style="font-style:italic; color:#aaa;">Non défini</span>';
+            } else {
+                pathArray.forEach((name, index) => {
+                    if (index > 0) {
+                        html += '<span class="separator">/</span>';
+                    }
+                    
+                    if (index === pathArray.length - 1) {
+                        html += `<span class="active-level">${name}</span>`;
+                    } else {
+                        html += `<span>${name}</span>`;
+                    }
+                });
+            }
             
             container.innerHTML = html;
         }
@@ -962,7 +985,6 @@
             
             const bpmnData = element ? getProcessData(element) : { execPath: [], orgPath: [] };
             
-            // Construction des fils d'Ariane dynamiques
             buildBreadcrumb(bpmnData.execPath, 'breadcrumb-exec');
             buildBreadcrumb(bpmnData.orgPath, 'breadcrumb-org');
 
