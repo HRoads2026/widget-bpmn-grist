@@ -786,13 +786,53 @@
             try {
                 await viewer.importXML(bpmnXML); viewer.get('canvas').zoom('fit-viewport');
                 viewer.on('element.click', (e) => {
+                    // On ignore les clics sur les lignes de flux ou le fond
+                    if (e.element.type === 'bpmn:SequenceFlow' || e.element.type === 'label' || e.element.type === 'bpmn:Process') return;
+
                     const match = gristRecords.find(r => r.ID_BPMN === e.element.id);
-                    if (currentActiveElementId) { viewer.get('canvas').removeMarker(currentActiveElementId, 'active-glow'); }
+                    
+                    if (currentActiveElementId) {
+                        viewer.get('canvas').removeMarker(currentActiveElementId, 'active-glow');
+                    }
+
                     if (match) {
-                        currentActiveElementId = e.element.id; viewer.get('canvas').addMarker(currentActiveElementId, 'active-glow');
-                        currentRecordId = match.id; updateFormFields(match, e.element); 
-                        document.getElementById('side-panel').classList.add('open'); grist.setSelectedRows([match.id]);
-                    } else { currentActiveElementId = null; document.getElementById('side-panel').classList.remove('open'); currentRecordId = null; }
+                        // --- L'ACTIVITÉ EXISTE DÉJÀ DANS GRIST ---
+                        currentActiveElementId = e.element.id;
+                        viewer.get('canvas').addMarker(currentActiveElementId, 'active-glow');
+                        currentRecordId = match.id;
+                        updateFormFields(match, e.element); 
+                        document.getElementById('side-panel').classList.add('open');
+                        grist.setSelectedRows([match.id]);
+                    } else {
+                        // --- L'ACTIVITÉ N'EXISTE PAS ENCORE : CRÉATION À LA VOLÉE ---
+                        const elementName = e.element.businessObject.name || "Nouvelle activité";
+                        
+                        // 1. On demande à Grist de créer un nouvel enregistrement
+                        grist.selectedTable.create({
+                            fields: {
+                                ID_BPMN: e.element.id,
+                                Activite_du_logigramme: elementName
+                            }
+                        }).then(newRecord => {
+                            // 2. Une fois créé, on l'ajoute à notre liste locale en mémoire
+                            const newMatch = { 
+                                id: newRecord.id, 
+                                ID_BPMN: e.element.id, 
+                                Activite_du_logigramme: elementName 
+                            };
+                            gristRecords.push(newMatch);
+                            
+                            // 3. On affiche le panneau avec la nouvelle activité
+                            currentActiveElementId = e.element.id;
+                            viewer.get('canvas').addMarker(currentActiveElementId, 'active-glow');
+                            currentRecordId = newRecord.id;
+                            updateFormFields(newMatch, e.element);
+                            document.getElementById('side-panel').classList.add('open');
+                            grist.setSelectedRows([newRecord.id]);
+                        }).catch(err => {
+                            console.error("Erreur de création Grist :", err);
+                        });
+                    }
                 });
             } catch (err) { console.error("Erreur BPMN:", err); }
         }
