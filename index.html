@@ -76,7 +76,6 @@
         .breadcrumb .separator { margin: 0 5px; color: #aaa; font-size: 10px; }
         .breadcrumb .icon { margin-right: 5px; font-size: 12px; }
         
-        /* Style pour le niveau actif (le plus profond) */
         .breadcrumb .active-level { 
             font-weight: bold; 
             color: #16b378; 
@@ -752,9 +751,7 @@
         <div class="form-grid">
             
             <div id="context-block">
-                <!-- Ligne 1 : Processus et Sous-Processus -->
                 <div id="breadcrumb-exec" class="breadcrumb"></div>
-                <!-- Ligne 2 : Organisation (Groupes / Services) -->
                 <div id="breadcrumb-org" class="breadcrumb"></div>
 
                 <div>
@@ -851,7 +848,6 @@
         let currentRecordId = null;
         let currentActiveElementId = null; 
         
-        // NOUVELLE LOGIQUE ROBUSTE : Utilisation du registre principal et de l'arbre logique
         function getProcessData(element) {
             let execPath = [];
             let orgPath = [];
@@ -860,18 +856,13 @@
 
             const elementRegistry = viewer.get('elementRegistry');
 
-            // 1. Trouver le nom du Processus racine (Toujours le Participant principal)
+            // 1. Processus (Participant)
             const participant = elementRegistry.filter(e => e.type === 'bpmn:Participant')[0];
             if (participant && participant.businessObject) {
                 execPath.push(participant.businessObject.name || "Processus");
-            } else {
-                const process = elementRegistry.filter(e => e.type === 'bpmn:Process')[0];
-                if (process && process.businessObject) {
-                    execPath.push(process.businessObject.name || "Processus");
-                }
             }
 
-            // 2. Trouver la hiérarchie complète des Sous-Processus via l'arbre logique XML
+            // 2. Hiérarchie des Sous-Processus (via l'arbre sémantique XML)
             let currentBo = element.businessObject;
             let subProcesses = [];
             while (currentBo && currentBo.$parent) {
@@ -880,32 +871,44 @@
                 }
                 currentBo = currentBo.$parent;
             }
-            // On les inverse pour les avoir du plus haut niveau au plus profond
             subProcesses.reverse().forEach(sp => {
                 execPath.push(sp.name || "Sous-processus");
             });
 
-            // 3. Trouver la hiérarchie des Lanes (Organisation)
-            // L'élément appartient à la même Lane que son sous-processus parent le plus élevé
-            let targetId = element.id;
+            // 3. Hiérarchie des Lanes (Organisation)
+            // On cherche l'ID de l'élément racine (le sous-processus le plus haut, ou l'élément lui-même)
+            let targetId = element.businessObject.id;
             if (subProcesses.length > 0) {
                 targetId = subProcesses[0].id; 
             }
 
-            const targetElement = elementRegistry.get(targetId);
-            if (targetElement) {
-                let currentEl = targetElement;
-                let lanes = [];
-                while (currentEl && currentEl.parent) {
-                    if (currentEl.parent.type === 'bpmn:Lane') {
-                        lanes.push(currentEl.parent.businessObject.name || "Service");
+            // On scanne toutes les Lanes du diagramme principal pour trouver celle qui contient notre cible
+            const allLanes = elementRegistry.filter(e => e.type === 'bpmn:Lane');
+            let targetLaneBo = null;
+            for (const lane of allLanes) {
+                const flowNodeRefs = lane.businessObject.flowNodeRef;
+                if (flowNodeRefs) {
+                    for (const ref of flowNodeRefs) {
+                        if (ref.id === targetId) {
+                            targetLaneBo = lane.businessObject;
+                            break;
+                        }
                     }
-                    currentEl = currentEl.parent;
                 }
-                // Inverser pour aller du Groupe au Sous-service
-                lanes.reverse().forEach(laneName => {
-                    orgPath.push(laneName);
-                });
+                if (targetLaneBo) break;
+            }
+
+            // Si on a trouvé la Lane, on remonte l'arborescence parente via le code XML sémantique
+            if (targetLaneBo) {
+                let currentLaneBo = targetLaneBo;
+                let laneNames = [];
+                while (currentLaneBo && currentLaneBo.$type !== 'bpmn:Process') {
+                    if (currentLaneBo.$type === 'bpmn:Lane') {
+                        laneNames.push(currentLaneBo.name || "Service");
+                    }
+                    currentLaneBo = currentLaneBo.$parent;
+                }
+                laneNames.reverse().forEach(name => orgPath.push(name));
             }
 
             return { execPath, orgPath };
